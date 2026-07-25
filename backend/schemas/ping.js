@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 const ping = new Schema({
-    siteId: {type: Schema.Types.ObjectId, ref: 'Website', required: true},
+    websiteId: {type: Schema.Types.ObjectId, ref: 'Website', required: true},
     responseTime: {type: Number, required: true},
-
+    status: {type: Boolean, required: true},
 }, {
     timestamps: true
 });
