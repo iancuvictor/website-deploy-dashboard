@@ -18,6 +18,18 @@ routes.get('/', async (req, res) => {
     }
 });
 
+routes.get('/website', async (req, res) => {
+    let data = {
+        website: await Website.findOne({_id: req.query.id}),
+        pings: await Ping.find({websiteId: req.query.id}),
+    }
+    if(data.website !== null && data.pings !== null){
+        res.status(200).json(data)
+    } else {
+        res.status(404).json({message: 'Website data found'})
+    }
+});
+
 routes.post('/addWebsite', async (req, res) => {
     try {
         await Website.create(req.body);
@@ -43,5 +55,14 @@ routes.delete('/', async (req, res) => {
     }
 })
 
+routes.delete('/pings', async (req, res) => {
+    try{
+        await Ping.deleteMany({websiteId: req.query.id});
+        res.status(200).json(`All pings have been deleted`);
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({message: 'An error has occured'});
+    }
+});
 
 export default routes;

@@ -33,17 +33,19 @@ export default function WebsitesPage() {
     }, [queryClient]);
 
     if (isLoading) {
-        return <div className="absolute flex flex-col items-center justify-center h-full w-full">
-            <FontAwesomeIcon icon={faCircleNotch} spin/>
+        return <div className="absolute flex flex-col items-center justify-center h-full w-full text-white text-[40px]">
+            <FontAwesomeIcon icon={faCircleNotch} spin={true}/>
         </div>
     } else {
         return <div className={`absolute flex flex-col items-center p-10 h-full w-full`}>
             {menu.addWebsite && <AddWebsite menu={menu} setMenu={setMenu} />}
             <button onClick={() => setMenu({ ...menu, addWebsite: true })} className="cursor-pointer text-white">Add website</button>
-            <div className="grid grid-cols-3 items-center gap-10">
-                {!isLoading && data.data.map((website) => {
+            <div className="flex flex-wrap items-center gap-10">
+                {!isLoading && data.data.length !== 0 ? data.data.map((website) => {
                     return <WebsiteCard websiteData={website} key={website._id} />
-                })}
+                }) : <div className="text-white bg-neutral-950 ring-1 ring-neutral-700 p-10">
+                    <h1>No websites are being tracked at the moment...</h1>
+                    </div>}
             </div>
         </div>
     }

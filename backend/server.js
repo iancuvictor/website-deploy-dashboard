@@ -29,7 +29,7 @@ app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json())
 app.use('/api/websites/', websites)
 
-// pingLiveUpdate(io);
+pingLiveUpdate(io);
 
 server.listen(port, () => {
   console.log(`Server running on port: ${port}`)
