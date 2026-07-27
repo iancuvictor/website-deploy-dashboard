@@ -12,7 +12,8 @@ function App() {
   return <BrowserRouter>
   <PopUpsProvider>
   <Toaster position="top-center" richColors/>
-      <div id='AppWrapper' className={`${darkMode ? 'bg-black' : 'bg-white'} font-mozilla`}>
+      <div id='AppWrapper' className={`${darkMode ? 'bg-black scrollbar-thumb-neutral-700 scrollbar-track-black' 
+        : 'bg-white scrollbar-thumb-blue-400'} font-mozilla`}>
         <Navbar/>
         <div className='relative min-h-[calc(100vh-5rem)]'>
         <Routes>

@@ -19,6 +19,8 @@ routes.get('/', async (req, res) => {
 });
 
 routes.get('/website', async (req, res) => {
+
+    console.log(req.query);
     try {
         let websiteData = await Website.findOne({ _id: req.query.id })
         let pingsData = await Ping.find({ websiteId: req.query.id })

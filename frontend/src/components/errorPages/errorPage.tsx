@@ -12,8 +12,6 @@ type ErrorPageProps = {
 export default function ErrorPage({ error }: ErrorPageProps) {
     const { darkMode } = useContext(GlobalStatesContext);
 
-    console.log({ ...error });
-
     return <div className={`${darkMode ? 'text-white' : 'text-black'} 
     fixed top-0 flex flex-col gap-5 items-center justify-center h-full w-full p-10`}>
         <span className="text-[60px] font-[700]">ERROR {error.status}</span>
