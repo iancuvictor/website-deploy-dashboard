@@ -5,7 +5,7 @@ import Website from '../schemas/website.js';
 import Ping from '../schemas/ping.js';
 
 export async function pingLiveUpdate(io){
-    cron.schedule(`* * * * *`, async () => {
+    cron.schedule(`* 2 * * *`, async () => {
         let websites = await Website.find();
         for (let website of websites) {
             let data = await pingWebsite(website.url);

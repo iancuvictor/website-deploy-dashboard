@@ -6,3 +6,4 @@ export {default as Navbar} from './navbar/navbar';
 export {default as PingCard} from './pingCard/pingCard';
 
 export {default as Confirm} from '../components/popUps/confirm';
+export {default as ErrorPage} from '../components/errorPages/errorPage';
