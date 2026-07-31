@@ -47,7 +47,7 @@ export default function AddWebsite({ menu, setMenu }) {
         }
     }
 
-    return <div className="fixed z-2 top-0 left-0 flex items-center justify-center h-full w-full bg-black/90">
+    return <div className="fixed z-2 top-0 left-0 flex items-center justify-center h-full w-full bg-black/30 backdrop-blur-2xl">
         <div className={`${darkMode ? 'bg-neutral-900 text-white' : 'bg-white text-black'} 
         relative flex flex-col gap-3 h-fit w-150 ring-1 ring-neutral-600 rounded-md p-10`}>
             <FontAwesomeIcon onClick={() => setMenu({ ...menu, addWebsite: false })}
@@ -71,9 +71,9 @@ export default function AddWebsite({ menu, setMenu }) {
                         className={inputClass} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <span className={inputTitle}>Enter ping frequency (ms)</span>
+                    <span className={inputTitle}>Enter ping frequency (seconds)</span>
                     {!formData.pingFrequency && <span className="text-rose-500 text-[14px]">Please enter a ping frequency</span>}
-                    <input type="number" placeholder="100ms"
+                    <input type="number" placeholder="1 sec"
                         onChange={(e) => setFormData({ ...formData, pingFrequency: +e.target.value })}
                         className={inputClass} />
                 </div>

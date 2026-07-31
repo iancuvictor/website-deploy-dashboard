@@ -4,18 +4,18 @@ import { useContext } from "react";
 import { useParams } from "react-router";
 import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
+import { faCircleNotch, faFloppyDisk, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { PingCard, ErrorPage } from "../../index.js";
 import PingsData from "./pingsData.js";
 import { usePopUps } from "../../../contexts/PopUpsContext.js";
-import { UseDeleteWebsite } from "../../../utils/deleteWebsite.js";
+import { useDeleteWebsite } from "../../../utils/deleteWebsite.js";
 
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function WebsitePage() {
     const { requestConfirm } = usePopUps();
-    const deleteWebsite = UseDeleteWebsite();
+    const deleteWebsite = useDeleteWebsite();
     const { darkMode } = useContext(GlobalStatesContext);
     const { id } = useParams();
 
@@ -38,7 +38,7 @@ export default function WebsitePage() {
             return <div className={`${darkMode ? 'text-white' : 'text-black'} flex flex-col gap-10 items-center justify-center p-10`}>
                 <button onClick={() => {
                     requestConfirm({
-                        message: `Are you sure you want to remove this website from the tracking list?`,
+                        message: `Are you sure you want to remove this website from the tracking list? This action cannot be undone.`,
                         confirmText: 'Yes, remove the website',
                         denyText: 'Cancel',
                         onConfirm: () => {
@@ -46,8 +46,10 @@ export default function WebsitePage() {
                         }
                     })
                 }}
+
                     className="cursor-pointer absolute top-10 right-10
-                 p-2 bg-rose-500 hover:bg-rose-600 rounded-xs text-white">Remove website</button>
+                 p-2 bg-rose-500 hover:bg-rose-600 rounded-xs text-white">
+                    <FontAwesomeIcon icon={faTrashCan}/> Remove website</button>
                 <div className="flex flex-col items-center justify-center">
                     <h1 className="text-[30px] font-[700]">Viewing {websiteData.name}</h1>
                     <a href={websiteData.url} target="_blank"
@@ -73,8 +75,8 @@ export default function WebsitePage() {
                         </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <span>Ping history:</span>
-                        <PingsData data={pingsData} websiteId={id} />
+                        <span>Ping data:</span>
+                        <PingsData data={pingsData} websiteId={id} websiteData={websiteData}/>
                     </div>
                 </div>
             </div>

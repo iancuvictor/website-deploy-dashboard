@@ -1,19 +1,19 @@
 import { useContext, useState } from "react"
 import { GlobalStatesContext } from "../../contexts/GlobalStatesContext"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faPause, faPenToSquare, faPlay, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { NavLink } from "react-router";
 import { usePopUps } from "../../contexts/PopUpsContext";
-import { UseDeleteWebsite } from "../../utils/deleteWebsite";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { toast } from "sonner";
+import { useDeleteWebsite } from "../../utils/deleteWebsite";
+import usePauseResumePinging from "../../utils/pauseResumePinging";
+import useUpdateWebsite from "../../utils/updateWebsite";
 
 type Website = {
     _id: string;
     name: string;
     url: string;
     pingFrequency: number;
+    pinging: boolean;
     latestPing: {
         createdAt: string,
         responseTime: number,
@@ -33,35 +33,24 @@ type Form = {
     pingFrequency: number
 }
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 export default function WebsiteCard({ websiteData }: WebsiteCardProps) {
-    const deleteWebsite = UseDeleteWebsite();
+    const deleteWebsite = useDeleteWebsite();
+    const pauseResumePinging = usePauseResumePinging(websiteData._id);
     const [editing, setEditing] = useState(false);
-    const queryClient = useQueryClient();
 
     let defaultData = {
         id: websiteData._id,
         name: websiteData.name,
         pingFrequency: websiteData.pingFrequency
     }
-
+    
     const [form, setForm] = useState<Form>(defaultData)
+    const updateWebsite = useUpdateWebsite();
 
     const isDisabled = JSON.stringify(form) === JSON.stringify(defaultData)
 
     const { requestConfirm } = usePopUps();
     const { darkMode } = useContext(GlobalStatesContext);
-
-    const updateWebsite = useMutation({
-        mutationFn: (form: Form) => axios.put(`${API_URL}/api/websites`, form),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['websites'] })
-            setForm(defaultData);
-            setEditing(false);
-            toast.success(`Website successfully updated`);
-        }
-    })
 
     if (websiteData.latestPing !== null) {
         return <div className={`${darkMode ? 'bg-neutral-950 text-white' : 'text-black'} 
@@ -96,7 +85,10 @@ export default function WebsiteCard({ websiteData }: WebsiteCardProps) {
                     <h1 className="text-[20px] font-[600]">{websiteData.name} <FontAwesomeIcon icon={faCircle} className={websiteData.latestPing.status ? `text-green-500` : `text-rose-500`} /></h1>
                     <a href={websiteData.url} target="_blank"
                         className="z-1 text-blue-400 hover:underline underline-offset-1">{websiteData.url}</a>
-                    <span>Ping frequency: {websiteData.pingFrequency} min</span>
+                    <span>Ping frequency: {websiteData.pingFrequency} min 
+                        [{websiteData.pinging 
+                        ? <span className="text-green-500">Currently pinging</span> 
+                        : <span className="text-rose-500">Pinging is paused</span> }]</span>
                     <span className="text-gray-500">Last checked: {Math.round((new Date().getTime() - new Date(websiteData.latestPing.createdAt).getTime()) / 1000)} sec ago</span>
                     <span className="text-gray-500">Response time: {websiteData.latestPing.responseTime}</span>
                     <span className="text-gray-500">Uptime percentage: 100%</span>
@@ -104,6 +96,10 @@ export default function WebsiteCard({ websiteData }: WebsiteCardProps) {
 
 
             {!editing && <div className="absolute top-0 right-0 p-3 flex flex-row gap-2 text-[22px]">
+                <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging)}
+                    className="cursor-pointer">
+                    <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay}/>
+                </button>
                 <button onClick={() => {
                     requestConfirm({
                         message: `Are you sure you want to remove this website from the tracking list?`,
@@ -134,6 +130,10 @@ export default function WebsiteCard({ websiteData }: WebsiteCardProps) {
                     className="z-1 text-blue-400 hover:underline underline-offset-1">{websiteData.url}</a>
                 <span className="text-gray-500">Awaiting first ping</span>
                 <div className="absolute top-0 right-0 p-3 flex flex-row gap-2 text-[22px]">
+                    <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging)}
+                    className="cursor-pointer">
+                    <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay}/>
+                </button>
                     <button onClick={() => {
                         requestConfirm({
                             message: `Are you sure you want to remove this website from the tracking list?`,

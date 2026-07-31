@@ -1,9 +1,13 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePopUps } from "../../../contexts/PopUpsContext.js";
 import { toast } from "sonner";
 import axios from "axios";
 import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext.js";
+import usePauseResumePinging from "../../../utils/pauseResumePinging.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlay, faPause, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import useUpdateWebsite from "../../../utils/updateWebsite.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -18,15 +22,36 @@ type Ping = {
 
 type PingsDataType = {
     data: Ping[],
-    websiteId: string
+    websiteId: string,
+    websiteData: {
+        _id: string,
+        name: string,
+        url: string,
+        pingFrequency: number,
+        pinging: boolean,
+    }
 };
 
-export default function PingsData({ data, websiteId } : PingsDataType) {
+type Form = {
+    id: string,
+    name: string,
+    pingFrequency: number
+}
+
+export default function PingsData({ data, websiteId, websiteData }: PingsDataType) {
     const { darkMode } = useContext(GlobalStatesContext);
+    const pauseResumePinging = usePauseResumePinging(websiteId);
+    const updateWebsite = useUpdateWebsite();
     const queryClient = useQueryClient();
     const { requestConfirm } = usePopUps();
 
-    console.log(data);
+    let defaultData = {
+        id: websiteData._id,
+        name: websiteData.name,
+        pingFrequency: websiteData.pingFrequency
+    }
+
+    const [form, setForm] = useState<Form>(defaultData);
 
     const deletePings = useMutation({
         mutationFn: (websiteId: string) => axios.delete(`${API_URL}/api/websites/pings?id=${websiteId}`),
@@ -59,6 +84,30 @@ export default function PingsData({ data, websiteId } : PingsDataType) {
     }, [data]);
 
     return <div className="flex flex-col gap-1 ring-1 ring-neutral-700 p-5 rounded-xs w-fit h-fit">
+        <div className="w-full">
+            <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging)}
+                className="cursor-pointer">
+                {websiteData.pinging
+                    ? <span className="text-green-500">Currently pinging</span>
+                    : <span className="text-rose-500">Pinging is paused</span>} {" "}
+                <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay} />
+            </button>
+        </div>
+        <div className="flex flex-row gap-4 items-center justify-center">
+            <span>
+                Pinging frequency: every <input type='text' onChange={(e) => setForm({ ...form, pingFrequency: +e.target.value })}
+                    value={form.pingFrequency}
+                    className="w-15 outline-none ring-1 ring-neutral-700 pr-2 pl-2" /> min
+            </span>
+            {JSON.stringify(defaultData) !== JSON.stringify(form) &&
+                <button onClick={() => updateWebsite.mutate(form, {
+                    onSuccess: () => {
+                        queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                    }
+                })}
+                    className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
+                    <FontAwesomeIcon icon={faFloppyDisk} /></button>}
+        </div>
         <span className="text-gray-500">Nr. of pings: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{data.length}</span></span>
         <span className="text-gray-500">Uptime percentage: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{isNaN(+upTimePercentage) ? '0' : upTimePercentage}%</span></span>
         <span className="text-gray-500">Average response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{averageResponseTime} ms</span></span>

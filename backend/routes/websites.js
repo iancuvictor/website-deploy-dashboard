@@ -42,8 +42,14 @@ routes.get('/website', async (req, res) => {
 });
 
 routes.post('/', async (req, res) => {
+    let data = {
+        name: req.body.name,
+        url: req.body.url,
+        pingFrequency: req.body.pingFrequency,
+        pinging: true
+    }
     try {
-        await Website.create(req.body);
+        await Website.create(data);
         res.status(200).json({ message: `Website [${req.body.url}] added` })
     } catch (err) {
         console.log(err);
@@ -57,9 +63,19 @@ routes.put('/', async (req, res) => {
         pingFrequency: req.body.pingFrequency
     }
 
+    try {
+        await Website.updateOne({ _id: req.body.id }, { $set: data });
+        res.status(200).json({ message: 'Website updated' });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'An error has occured' });
+    }
+})
+
+routes.put('/pinging', async (req, res) => {
     try{
-        await Website.updateOne({_id: req.body.id}, {$set: data});
-        res.status(200).json({message: 'Website updated'});
+        await Website.updateOne({_id: req.query.id}, { $set: {pinging: req.body.value}})
+        res.status(200).json({message: `Ping status updated to: ${req.body.value}`});
     } catch(err) {
         console.log(err);
         res.status(500).json({message: 'An error has occured'});

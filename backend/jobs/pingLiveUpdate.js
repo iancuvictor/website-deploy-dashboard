@@ -25,12 +25,14 @@ export async function pingLiveUpdate(io) {
         const websites = await Website.find();
 
         for (let website of websites) {
-            if (timePassed % website.pingFrequency === 0) {
+            if (timePassed % website.pingFrequency === 0 &&
+                website.pinging === true
+            ) {
                 let data = await pingWebsite(website.url);
                 let ping = await Ping.create({
                     websiteId: website._id,
                     responseTime: data.responseTime,
-                    status: data.status === 'up'
+                    status: data.status
                 });
                 io.emit('websiteUpdate', ping)
             }
