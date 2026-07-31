@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { WebsiteCard } from "../index.js";
-import AddWebsite from "./addWebsite.js";
+import AddWebsite from "../popUps/addWebsite.js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { io } from 'socket.io-client';

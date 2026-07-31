@@ -19,8 +19,6 @@ routes.get('/', async (req, res) => {
 });
 
 routes.get('/website', async (req, res) => {
-
-    console.log(req.query);
     try {
         let websiteData = await Website.findOne({ _id: req.query.id })
         let pingsData = await Ping.find({ websiteId: req.query.id })
@@ -43,15 +41,30 @@ routes.get('/website', async (req, res) => {
     }
 });
 
-routes.post('/addWebsite', async (req, res) => {
+routes.post('/', async (req, res) => {
     try {
         await Website.create(req.body);
         res.status(200).json({ message: `Website [${req.body.url}] added` })
     } catch (err) {
         console.log(err);
-        res.json({ message: `An error has happened` });
+        res.status(500).json({ message: `An error has happened` });
     }
 });
+
+routes.put('/', async (req, res) => {
+    const data = {
+        name: req.body.name,
+        pingFrequency: req.body.pingFrequency
+    }
+
+    try{
+        await Website.updateOne({_id: req.body.id}, {$set: data});
+        res.status(200).json({message: 'Website updated'});
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({message: 'An error has occured'});
+    }
+})
 
 routes.delete('/', async (req, res) => {
     try {

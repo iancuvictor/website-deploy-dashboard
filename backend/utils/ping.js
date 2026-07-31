@@ -5,13 +5,13 @@ export async function pingWebsite(url) {
     try {
         let response = await axios.get(url, { timeout: 5000 });
         return {
-            status: 'up',
+            status: true,
             responseTime: Date.now() - start,
             statusCode: response.status,
         };
     } catch (err) {
         return {
-            status: 'down',
+            status: false,
             responseTime: Date.now() - start,
             error: err.message,
         };

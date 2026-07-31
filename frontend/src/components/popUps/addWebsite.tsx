@@ -7,7 +7,8 @@ import axios from 'axios';
 import {toast} from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const urlRegex = /^https?:\/\/[\da-z\.-]+\.[a-z\.]{2,6}[\/\w \.-]*\/?$/
+const urlRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
+
 
 const inputClass = `outline-none w-full ring-1 ring-neutral-400 p-2`;
 const inputTitle = `font-[500]`;
@@ -29,24 +30,28 @@ export default function AddWebsite({ menu, setMenu }) {
     };
 
     const createNewSite = useMutation({
-        mutationFn: (newSite: NewSitePayload) => axios.post(`${API_URL}/api/websites/addWebsite`, newSite),
+        mutationFn: (newSite: NewSitePayload) => axios.post(`${API_URL}/api/websites`, newSite),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['websites'] })
             toast.success(`Website successfuly added`);
+            setMenu({ ...menu, addWebsite: false })
         },
     });
     
     
     const addWebsite = () => {
-        createNewSite.mutate(formData);
+        if(urlRegex.test(formData.url) && formData.name !== '' && formData.pingFrequency !== 0){
+            createNewSite.mutate(formData);
+        } else {
+            toast.error(`Please fix the broken fields before submitting the request.`)
+        }
     }
 
     return <div className="fixed z-2 top-0 left-0 flex items-center justify-center h-full w-full bg-black/90">
         <div className={`${darkMode ? 'bg-neutral-900 text-white' : 'bg-white text-black'} 
-        relative flex flex-col gap-5
-        h-fit w-150 ring-1 ring-neutral-600 rounded-md p-10`}>
+        relative flex flex-col gap-3 h-fit w-150 ring-1 ring-neutral-600 rounded-md p-10`}>
             <FontAwesomeIcon onClick={() => setMenu({ ...menu, addWebsite: false })}
-                className={`absolute cursor-pointer right-0 top-0 hover:bg-neutral-800 p-5 rounded-bl-xs rounded-tr-md`} icon={faX} />
+                className={`${ darkMode ? 'hover:bg-neutral-800' : 'hover:bg-gray-300'} absolute cursor-pointer right-0 top-0 p-5 rounded-bl-xs rounded-tr-md`} icon={faX} />
             <h1 className="text-[20px] font-[700]">Add website</h1>
             <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-1">
