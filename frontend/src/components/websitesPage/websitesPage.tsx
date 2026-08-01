@@ -36,23 +36,24 @@ export default function WebsitesPage() {
 
     if (isLoading) {
         return <div className="absolute flex flex-col items-center justify-center h-full w-full text-white text-[40px]">
-            <FontAwesomeIcon icon={faCircleNotch} spin={true}/>
+            <FontAwesomeIcon icon={faCircleNotch} spin={true} />
         </div>
     } else {
-        return <div className={`${ darkMode ? 'text-white' : 'text-black' } absolute flex flex-col items-center p-10 
+        return <div className={`${darkMode ? 'text-white' : 'text-black'} absolute flex flex-col items-center p-10 
         h-full w-full gap-5`}>
-            {menu.addWebsite && <AddWebsite menu={menu} setMenu={setMenu} />}
-            <h1 className="text-[30px] font-[700]">Tracked websites</h1>
-            <button onClick={() => setMenu({ ...menu, addWebsite: true })} 
-            className={`${ darkMode ? 'hover:bg-neutral-900' : 'hover:bg-gray-200' } 
-            cursor-pointer rounded-xs p-2
-            ring-1 ring-neutral-700`}>Add website</button>
+            <div className="flex flex-row gap-5">
+                {menu.addWebsite && <AddWebsite menu={menu} setMenu={setMenu} />}
+                <h1 className="text-[30px] font-[700]">Tracked websites</h1>
+                <button onClick={() => setMenu({ ...menu, addWebsite: true })}
+                    className={`${darkMode ? 'hover:bg-neutral-900' : 'hover:bg-gray-200'} 
+                    cursor-pointer rounded-xs p-2 ring-1 ring-neutral-700`}>Add website</button>
+            </div>
             <div className="flex flex-wrap items-center gap-10">
                 {!isLoading && data.data.length !== 0 ? data.data.map((website) => {
                     return <WebsiteCard websiteData={website} key={website._id} />
                 }) : <div className="text-white bg-neutral-950 ring-1 ring-neutral-700 p-10">
                     <h1>No websites are being tracked at the moment...</h1>
-                    </div>}
+                </div>}
             </div>
         </div>
     }

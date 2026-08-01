@@ -71,10 +71,15 @@ export default function AddWebsite({ menu, setMenu }) {
                         className={inputClass} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <span className={inputTitle}>Enter ping frequency (seconds)</span>
-                    {!formData.pingFrequency && <span className="text-rose-500 text-[14px]">Please enter a ping frequency</span>}
-                    <input type="number" placeholder="1 sec"
-                        onChange={(e) => setFormData({ ...formData, pingFrequency: +e.target.value })}
+                    <span className={inputTitle}>Enter ping frequency (minutes)</span>
+                    {!formData.pingFrequency && <span className="text-rose-500 text-[14px]">Please enter a valid ping frequency</span>}
+                    <input type="number" placeholder="1 min" min={1}
+                        onChange={(e) => {
+                            if(+e.target.value <= 0 && e.target.value !== ''){
+                                e.target.value = "1"
+                            }
+                            setFormData({ ...formData, pingFrequency: +e.target.value })
+                        }}
                         className={inputClass} />
                 </div>
             </div>
