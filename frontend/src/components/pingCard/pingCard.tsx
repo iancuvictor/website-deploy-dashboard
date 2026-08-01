@@ -4,12 +4,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCircle } from "@fortawesome/free-solid-svg-icons"
 
 type PingCardProps = {
-    createdAt: '',
-    updatedAt: Date,
-    responseTime: 0,
-    status: Boolean,
-    websiteId: '',
-    _id: '',
+    createdAt: string,
+    updatedAt: string,
+    responseTime: number,
+    status: boolean,
+    websiteId: string,
+    _id: string,
 }
 
 type PingDataType = {

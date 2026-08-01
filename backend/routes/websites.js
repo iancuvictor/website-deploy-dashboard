@@ -1,6 +1,7 @@
 import express from 'express';
 import Website from '../schemas/website.js';
 import Ping from '../schemas/ping.js';
+import Certificate from '../schemas/certificate.js';
 
 const routes = express.Router();
 
@@ -22,11 +23,14 @@ routes.get('/website', async (req, res) => {
     try {
         let websiteData = await Website.findOne({ _id: req.query.id })
         let pingsData = await Ping.find({ websiteId: req.query.id })
+        let certData = await Certificate.find({ websiteId: req.query.id })
 
         let data = {
             website: websiteData,
             pings: pingsData,
+            certificate: certData
         }
+        
         if (data.website !== null) {
             res.status(200).json(data)
         } else {

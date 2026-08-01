@@ -5,6 +5,7 @@ import { faX } from "@fortawesome/free-solid-svg-icons";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import {toast} from 'sonner';
+import negativeCheck from '../../utils/negativeCheck.js';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const urlRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
@@ -75,9 +76,7 @@ export default function AddWebsite({ menu, setMenu }) {
                     {!formData.pingFrequency && <span className="text-rose-500 text-[14px]">Please enter a valid ping frequency</span>}
                     <input type="number" placeholder="1 min" min={1}
                         onChange={(e) => {
-                            if(+e.target.value <= 0 && e.target.value !== ''){
-                                e.target.value = "1"
-                            }
+                            negativeCheck(e, 1)
                             setFormData({ ...formData, pingFrequency: +e.target.value })
                         }}
                         className={inputClass} />

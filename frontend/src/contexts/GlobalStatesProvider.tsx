@@ -4,7 +4,6 @@ import { GlobalStatesContext } from "./GlobalStatesContext";
 export function GlobalStatesProvider({ children }: { children: ReactNode }) {
 
   const darkModeValue = JSON.parse(localStorage.getItem('darkMode'))
-  console.log(darkModeValue);
 
   const [darkMode, setDarkMode] = useState(darkModeValue);
 

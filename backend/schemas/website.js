@@ -6,6 +6,8 @@ const website = new Schema({
     url: {type: String, required: true},
     pingFrequency: {type: Number, min: [1, `Ping frequency cannot be 0 or negative`], required: true},
     pinging: {type: Boolean, default: true, required: true},
+    certFrequency: {type: Number, min: [1, `Cert frequency cannot be 0 or negative`], default: 1, required: true},
+    certPinging: {type: Boolean, default: true, required: true},
 });
 
 const Website = model('Website', website);

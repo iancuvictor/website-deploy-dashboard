@@ -83,7 +83,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
         }
     }, [data]);
 
-    return <div className="flex flex-col gap-1 ring-1 ring-neutral-700 p-5 rounded-xs w-fit h-fit">
+    return <div className="flex flex-col gap-1 ring-1 ring-neutral-700 p-5 rounded-xs w-100 h-100">
         <div className="w-full">
             <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging)}
                 className="cursor-pointer">
@@ -93,7 +93,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
                 <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay} />
             </button>
         </div>
-        <div className="flex flex-row gap-4 items-center justify-center">
+        <div className="flex flex-row gap-4 items-center">
             <span>
                 Pinging frequency: every <input type='text' onChange={(e) => setForm({ ...form, pingFrequency: +e.target.value })}
                     value={form.pingFrequency}

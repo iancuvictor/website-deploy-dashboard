@@ -9,6 +9,9 @@ import { PingCard, ErrorPage } from "../../index.js";
 import PingsData from "./pingsData.js";
 import { usePopUps } from "../../../contexts/PopUpsContext.js";
 import { useDeleteWebsite } from "../../../utils/deleteWebsite.js";
+import Chart from "./chart.tsx";
+import PingTable from "./pingTable.tsx";
+import CertificateStatus from "./certificateStatus.tsx";
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -26,6 +29,7 @@ export default function WebsitePage() {
 
     const websiteData = data?.data?.website;
     const pingsData = data?.data?.pings;
+    const certData = data?.data?.certificate;
 
     if (error) {
         return <ErrorPage error={error} />
@@ -49,35 +53,32 @@ export default function WebsitePage() {
 
                     className="cursor-pointer absolute top-10 right-10
                  p-2 bg-rose-500 hover:bg-rose-600 rounded-xs text-white">
-                    <FontAwesomeIcon icon={faTrashCan}/> Remove website</button>
+                    <FontAwesomeIcon icon={faTrashCan} /> Remove website</button>
                 <div className="flex flex-col items-center justify-center">
                     <h1 className="text-[30px] font-[700]">Viewing {websiteData.name}</h1>
                     <a href={websiteData.url} target="_blank"
                         className="cursor-pointer text-[16px] text-blue-400 hover:underline underline-offset-1">{websiteData.url}</a>
                 </div>
-                <div className={`relative flex flex-row gap-10`}>
+                <div className={`relative flex flex-row flex-wrap gap-10 `}>
                     <div className="flex flex-col gap-2">
                         <span>Up-time</span>
-                        <div className={`flex flex-col h-100 w-100 ring-1 ring-neutral-700 overflow-hidden overflow-y-scroll`}>
-                            {pingsData.length > 0 ? [...pingsData].filter((ping) => ping.status === true)
-                                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ping) => {
-                                    return <PingCard pingData={ping} key={ping._id} />
-                                }) : <div className={`${darkMode ? 'text-white' : 'text-black'} w-full text-center p-5`}>No pings have been recorded yet</div>}
-                        </div>
+                        <PingTable pingsData={pingsData} status={true} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <span>Errors and down-times</span>
-                        <div className={`flex flex-col h-100 w-100 ring-1 ring-neutral-700 overflow-hidden overflow-y-scroll`}>
-                            {pingsData.length > 0 ? [...pingsData].filter((ping) => ping.status === false).
-                                sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ping) => {
-                                    return <PingCard pingData={ping} key={ping._id} />
-                                }) : <div className={`${darkMode ? 'text-white' : 'text-black'} w-full text-center p-5`}>No pings have been recorded yet</div>}
-                        </div>
+                        <PingTable pingsData={pingsData} status={false} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <span>Ping data:</span>
-                        <PingsData data={pingsData} websiteId={id} websiteData={websiteData}/>
+                        <PingsData data={pingsData} websiteId={id} websiteData={websiteData} />
                     </div>
+                    <div className="flex flex-col gap-2">
+                        <span>SSL Certificate:</span>
+                        <CertificateStatus lastCert={certData.slice(-1)[0]} />
+                    </div>
+                </div>
+                <div className="w-full ring-1 ring-neutral-700 p-5">
+                    <Chart data={pingsData} />
                 </div>
             </div>
         }

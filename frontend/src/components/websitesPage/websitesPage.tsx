@@ -27,6 +27,7 @@ export default function WebsitesPage() {
     useEffect(() => {
         socket.on('websiteUpdate', () => {
             queryClient.invalidateQueries({ queryKey: ['websites'] });
+            queryClient.invalidateQueries({ queryKey: ['website'] });
         });
 
         return () => {
