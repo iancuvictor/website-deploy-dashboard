@@ -7,14 +7,17 @@ const API_URL = import.meta.env.VITE_API_URL;
 type Form = {
     id: string,
     name: string,
-    pingFrequency: number
+    pingFrequency: number,
+    certFrequency: number
 }
+
+type UpdateForm = Partial<Form> & { id: string };
 
 export default function useUpdateWebsite(){
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (form: Form) => axios.put(`${API_URL}/api/websites`, form),
+        mutationFn: (form: UpdateForm) => axios.put(`${API_URL}/api/websites`, form),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['websites'] })
             toast.success(`Website successfully updated`);

@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useContext, useEffect } from "react";
 import { useParams } from "react-router";
 import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,15 +12,19 @@ import { useDeleteWebsite } from "../../../utils/deleteWebsite.js";
 import Chart from "./chart.tsx";
 import PingTable from "./pingTable.tsx";
 import CertificateStatus from "./certificateStatus.tsx";
+import { io } from 'socket.io-client';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+const socket = io(import.meta.env.VITE_API_URL);
 
 export default function WebsitePage() {
     const { requestConfirm } = usePopUps();
     const deleteWebsite = useDeleteWebsite();
     const { darkMode } = useContext(GlobalStatesContext);
     const { id } = useParams();
+    const queryClient = useQueryClient();
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['website', id],
@@ -30,6 +34,21 @@ export default function WebsitePage() {
     const websiteData = data?.data?.website;
     const pingsData = data?.data?.pings;
     const certData = data?.data?.certificate;
+
+    useEffect(() => {
+        
+        const handleUpdate = () => {
+            queryClient.invalidateQueries({ queryKey: ['website', id] });
+        };
+        socket.on('websiteUpdate', handleUpdate)
+        socket.on('certificationUpdate', handleUpdate)
+
+        return () => {
+            socket.off('websiteUpdate');
+            socket.off('certificationUpdate');
+        };
+    }, [queryClient]);
+
 
     if (error) {
         return <ErrorPage error={error} />
@@ -69,16 +88,16 @@ export default function WebsitePage() {
                         <PingTable pingsData={pingsData} status={false} />
                     </div>
                     <div className="flex flex-col gap-2">
+                        <span>SSL Certificate:</span>
+                        <CertificateStatus websiteData={websiteData} websiteId={id} lastCert={certData.slice(-1)[0]} />
+                    </div>
+                </div>
+                <div className="flex flex-row w-320 ring-1 ring-neutral-700 p-5">
+                    <Chart data={pingsData} />
+                    <div className="flex flex-col gap-2">
                         <span>Ping data:</span>
                         <PingsData data={pingsData} websiteId={id} websiteData={websiteData} />
                     </div>
-                    <div className="flex flex-col gap-2">
-                        <span>SSL Certificate:</span>
-                        <CertificateStatus lastCert={certData.slice(-1)[0]} />
-                    </div>
-                </div>
-                <div className="w-full ring-1 ring-neutral-700 p-5">
-                    <Chart data={pingsData} />
                 </div>
             </div>
         }

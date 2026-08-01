@@ -40,7 +40,7 @@ type Form = {
 
 export default function PingsData({ data, websiteId, websiteData }: PingsDataType) {
     const { darkMode } = useContext(GlobalStatesContext);
-    const pauseResumePinging = usePauseResumePinging(websiteId);
+    const pauseResumePinging = usePauseResumePinging(websiteId, 'ping');
     const updateWebsite = useUpdateWebsite();
     const queryClient = useQueryClient();
     const { requestConfirm } = usePopUps();
@@ -83,14 +83,20 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
         }
     }, [data]);
 
-    return <div className="flex flex-col gap-1 ring-1 ring-neutral-700 p-5 rounded-xs w-100 h-100">
+    return <div className="flex flex-col justify-between ring-1 ring-neutral-700 p-5 rounded-xs w-100 h-100">
+        <div className="flex flex-col gap-1">
+
         <div className="w-full">
-            <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging)}
-                className="cursor-pointer">
+            <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                }
+            })}
+            className="cursor-pointer">
+                    <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay} /> {" "}
                 {websiteData.pinging
                     ? <span className="text-green-500">Currently pinging</span>
-                    : <span className="text-rose-500">Pinging is paused</span>} {" "}
-                <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay} />
+                    : <span className="text-rose-500">Pinging is paused</span>}
             </button>
         </div>
         <div className="flex flex-row gap-4 items-center">
@@ -113,6 +119,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
         <span className="text-gray-500">Average response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{averageResponseTime} ms</span></span>
         <span className="text-gray-500">Max. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.max(...responseTimeArray)}</span></span>
         <span className="text-gray-500">Min. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.min(...responseTimeArray)}</span></span>
+        </div>
         <button onClick={() => requestConfirm({
             message: `Are you sure you want to delete every recorded ping? This action is permanent.`,
             confirmText: 'Yes, delete every ping.',

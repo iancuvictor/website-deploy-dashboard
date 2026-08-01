@@ -62,13 +62,8 @@ routes.post('/', async (req, res) => {
 });
 
 routes.put('/', async (req, res) => {
-    const data = {
-        name: req.body.name,
-        pingFrequency: req.body.pingFrequency
-    }
-
     try {
-        await Website.updateOne({ _id: req.body.id }, { $set: data });
+        await Website.updateOne({ _id: req.body.id }, { $set: req.body });
         res.status(200).json({ message: 'Website updated' });
     } catch (err) {
         console.log(err);
@@ -77,9 +72,16 @@ routes.put('/', async (req, res) => {
 })
 
 routes.put('/pinging', async (req, res) => {
+    console.log('hit');
+    console.log(req.query);
     try{
-        await Website.updateOne({_id: req.query.id}, { $set: {pinging: req.body.value}})
-        res.status(200).json({message: `Ping status updated to: ${req.body.value}`});
+        if(req.query.pingType === 'ping'){
+            await Website.updateOne({_id: req.query.id}, { $set: {pinging: req.body.value}})
+            res.status(200).json({message: `Ping status updated to: ${req.body.value}`});
+        } else if(req.query.pingType === 'certificate'){
+            await Website.updateOne({_id: req.query.id}, { $set: {certPinging: req.body.value}})
+            res.status(200).json({message: `Certificate check status updated to: ${req.body.value}`});
+        }
     } catch(err) {
         console.log(err);
         res.status(500).json({message: 'An error has occured'});
@@ -94,6 +96,9 @@ routes.delete('/', async (req, res) => {
         await Ping.deleteMany({
             websiteId: req.query.id
         })
+        await Certificate.deleteMany({
+            websiteId: req.query.id
+        })
         res.status(200).json('Website and pings removed');
     } catch (err) {
         console.log(err);
@@ -105,6 +110,16 @@ routes.delete('/pings', async (req, res) => {
     try {
         await Ping.deleteMany({ websiteId: req.query.id });
         res.status(200).json(`All pings have been deleted`);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'An error has occured' });
+    }
+});
+
+routes.delete('/certificates', async (req, res) => {
+    try {
+        await Certificate.deleteMany({ websiteId: req.query.id });
+        res.status(200).json(`All certificate checks have been deleted`);
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'An error has occured' });

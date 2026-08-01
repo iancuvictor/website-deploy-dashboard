@@ -23,10 +23,9 @@ export async function pingLiveUpdate(io) {
                 io.emit('websiteUpdate', ping)
             }
             if (timePassed % website.certFrequency === 0 && website.certPinging === true) {
-
                 try {
                     const certificate = await getSsl(website.url);
-                    await Certificate.create({
+                    let cert = await Certificate.create({
                         websiteId: website._id,
                         hostname: certificate.hostname,
                         validFrom: certificate.validFrom,
@@ -38,6 +37,7 @@ export async function pingLiveUpdate(io) {
                             CN: certificate.issuer?.CN,
                         }
                     })
+                    io.emit('certificationUpdate', cert)
                 } catch (err) {
                     console.error(`SSL check failed for ${website.url}:`, err.message);
                 }
