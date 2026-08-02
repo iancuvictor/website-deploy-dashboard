@@ -53,9 +53,6 @@ export default function CertificateStatus({ websiteData, websiteId, lastCert }: 
 
     const [form, setForm] = useState<Form>(defaultData)
 
-    console.log(defaultData);
-    console.log(form);
-
     const deleteCertPings = useMutation({
         mutationFn: (websiteId: string) => axios.delete(`${API_URL}/api/websites/certificates?id=${websiteId}`),
         onSuccess: () => {

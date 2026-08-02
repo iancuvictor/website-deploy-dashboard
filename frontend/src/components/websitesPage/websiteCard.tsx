@@ -7,6 +7,7 @@ import { usePopUps } from "../../contexts/PopUpsContext";
 import { useDeleteWebsite } from "../../utils/deleteWebsite";
 import usePauseResumePinging from "../../utils/pauseResumePinging";
 import useUpdateWebsite from "../../utils/updateWebsite";
+import { formatDistanceToNow } from 'date-fns';
 
 type Website = {
     _id: string;
@@ -35,7 +36,7 @@ type Form = {
 
 export default function WebsiteCard({ websiteData }: WebsiteCardProps) {
     const deleteWebsite = useDeleteWebsite();
-    const pauseResumePinging = usePauseResumePinging(websiteData._id);
+    const pauseResumePinging = usePauseResumePinging(websiteData._id, 'ping');
     const [editing, setEditing] = useState(false);
 
     let defaultData = {
@@ -89,9 +90,8 @@ export default function WebsiteCard({ websiteData }: WebsiteCardProps) {
                         [{websiteData.pinging 
                         ? <span className="text-green-500">Currently pinging</span> 
                         : <span className="text-rose-500">Pinging is paused</span> }]</span>
-                    <span className="text-gray-500">Last checked: {Math.round((new Date().getTime() - new Date(websiteData.latestPing.createdAt).getTime()) / 1000)} sec ago</span>
-                    <span className="text-gray-500">Response time: {websiteData.latestPing.responseTime}</span>
-                    <span className="text-gray-500">Uptime percentage: 100%</span>
+                    <span className="text-gray-500">Last checked: {formatDistanceToNow(new Date(websiteData.latestPing.createdAt), { addSuffix: true })}</span>
+                    <span className="text-gray-500">Response time: {websiteData.latestPing.responseTime} ms</span>
                 </div>}
 
 

@@ -8,6 +8,7 @@ import usePauseResumePinging from "../../../utils/pauseResumePinging.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import useUpdateWebsite from "../../../utils/updateWebsite.js";
+import { intervalToDuration, formatDuration } from 'date-fns';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -79,46 +80,79 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
 
     const upTimePercentage = useMemo(() => {
         if (data !== undefined && data.length > 0) {
-            return (data.filter((ping) => ping.status === true).length / data.length * 100).toFixed(2);
+            return +(data.filter((ping) => ping.status === true).length / data.length * 100).toFixed(2);
         }
     }, [data]);
+
+    const latestDowntimeDuration = useMemo(() => {
+        if (data.slice(-1)[0]?.status === false) {
+            return 'Ongoing outage'
+        } else {
+            const result = [];
+            for (let i = 0; i < data.length; i++) {
+                if (result.length === 2) break
+                if (data[i].status === true && data[i + 1]?.status === false) {
+                    result.push(data[i].createdAt);
+                } else if (data[i].status === false && data[i + 1]?.status === true) {
+                    result.push(data[i + 1].createdAt);
+                }
+            }
+            if (result.length < 2) {
+                return 'No downtime recorded';
+            }
+            const duration = intervalToDuration({ start: new Date(result[1]), end: new Date(result[0]) });
+            return formatDuration(duration);
+        }
+    }, [data])
+
+    function getUptimeColor(percentage: number): string {
+        if (isNaN(percentage)) return 'text-gray-500';
+        if (percentage >= 90) return 'text-green-500';
+        if (percentage >= 50) return 'text-yellow-500';
+        if (percentage >= 20) return 'text-orange-500';
+        return 'text-rose-500';
+    }
 
     return <div className="flex flex-col justify-between ring-1 ring-neutral-700 p-5 rounded-xs w-100 h-100">
         <div className="flex flex-col gap-1">
 
-        <div className="w-full">
-            <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging, {
-                onSuccess: () => {
-                    queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
-                }
-            })}
-            className="cursor-pointer">
-                    <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay} /> {" "}
-                {websiteData.pinging
-                    ? <span className="text-green-500">Currently pinging</span>
-                    : <span className="text-rose-500">Pinging is paused</span>}
-            </button>
-        </div>
-        <div className="flex flex-row gap-4 items-center">
-            <span>
-                Pinging frequency: every <input type='text' onChange={(e) => setForm({ ...form, pingFrequency: +e.target.value })}
-                    value={form.pingFrequency}
-                    className="w-15 outline-none ring-1 ring-neutral-700 pr-2 pl-2" /> min
-            </span>
-            {JSON.stringify(defaultData) !== JSON.stringify(form) &&
-                <button onClick={() => updateWebsite.mutate(form, {
+            <div className="w-full">
+                <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging, {
                     onSuccess: () => {
                         queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
                     }
                 })}
-                    className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
-                    <FontAwesomeIcon icon={faFloppyDisk} /></button>}
-        </div>
-        <span className="text-gray-500">Nr. of pings: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{data.length}</span></span>
-        <span className="text-gray-500">Uptime percentage: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{isNaN(+upTimePercentage) ? '0' : upTimePercentage}%</span></span>
-        <span className="text-gray-500">Average response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{averageResponseTime} ms</span></span>
-        <span className="text-gray-500">Max. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.max(...responseTimeArray)}</span></span>
-        <span className="text-gray-500">Min. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.min(...responseTimeArray)}</span></span>
+                    className="cursor-pointer">
+                    <FontAwesomeIcon icon={websiteData.pinging ? faPause : faPlay} /> {" "}
+                    {websiteData.pinging
+                        ? <span className="text-green-500">Currently pinging</span>
+                        : <span className="text-rose-500">Pinging is paused</span>}
+                </button>
+            </div>
+            <div className="flex flex-row gap-4 items-center">
+                <span>
+                    Pinging frequency: every <input type='text' onChange={(e) => setForm({ ...form, pingFrequency: +e.target.value })}
+                        value={form.pingFrequency}
+                        className="w-15 outline-none ring-1 ring-neutral-700 pr-2 pl-2" /> min
+                </span>
+                {JSON.stringify(defaultData) !== JSON.stringify(form) &&
+                    <button onClick={() => updateWebsite.mutate(form, {
+                        onSuccess: () => {
+                            queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                        }
+                    })}
+                        className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
+                        <FontAwesomeIcon icon={faFloppyDisk} /></button>}
+            </div>
+            <span className="text-gray-500">Nr. of pings: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{data.length}</span></span>
+            <span className="text-gray-500">Uptime percentage: {" "}
+                <span className={getUptimeColor(upTimePercentage)}>
+                    {isNaN(+upTimePercentage) ? '0' : upTimePercentage}%</span>
+            </span>
+            <span className="text-gray-500">Average response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{averageResponseTime} ms</span></span>
+            <span className="text-gray-500">Max. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.max(...responseTimeArray)}</span></span>
+            <span className="text-gray-500">Min. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.min(...responseTimeArray)}</span></span>
+            <span className="text-gray-500">Latest downtime duration: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{latestDowntimeDuration}</span></span>
         </div>
         <button onClick={() => requestConfirm({
             message: `Are you sure you want to delete every recorded ping? This action is permanent.`,

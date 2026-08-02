@@ -44,8 +44,8 @@ export default function WebsitePage() {
         socket.on('certificationUpdate', handleUpdate)
 
         return () => {
-            socket.off('websiteUpdate');
-            socket.off('certificationUpdate');
+            socket.off('websiteUpdate', handleUpdate);
+            socket.off('certificationUpdate', handleUpdate);
         };
     }, [queryClient]);
 
@@ -80,12 +80,16 @@ export default function WebsitePage() {
                 </div>
                 <div className={`relative flex flex-row flex-wrap gap-10 `}>
                     <div className="flex flex-col gap-2">
-                        <span>Up-time</span>
-                        <PingTable pingsData={pingsData} status={true} />
+                        <span>Recorded pings</span>
+                        <PingTable pingsData={pingsData} />
                     </div>
-                    <div className="flex flex-col gap-2">
+                    {/* <div className="flex flex-col gap-2">
                         <span>Errors and down-times</span>
                         <PingTable pingsData={pingsData} status={false} />
+                    </div> */}
+                    <div className="flex flex-col gap-2">
+                        <span>Ping data:</span>
+                        <PingsData data={pingsData} websiteId={id} websiteData={websiteData} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <span>SSL Certificate:</span>
@@ -94,10 +98,6 @@ export default function WebsitePage() {
                 </div>
                 <div className="flex flex-row w-320 ring-1 ring-neutral-700 p-5">
                     <Chart data={pingsData} />
-                    <div className="flex flex-col gap-2">
-                        <span>Ping data:</span>
-                        <PingsData data={pingsData} websiteId={id} websiteData={websiteData} />
-                    </div>
                 </div>
             </div>
         }

@@ -22,7 +22,7 @@ routes.get('/', async (req, res) => {
 routes.get('/website', async (req, res) => {
     try {
         let websiteData = await Website.findOne({ _id: req.query.id })
-        let pingsData = await Ping.find({ websiteId: req.query.id })
+        let pingsData = await Ping.find({ websiteId: req.query.id }).sort({ createdAt: -1 });
         let certData = await Certificate.find({ websiteId: req.query.id })
 
         let data = {
