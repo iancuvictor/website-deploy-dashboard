@@ -11,4 +11,4 @@ Now for a quick explanation of the deployment page, we start off with the first 
 -  Sub-routes can be used to navigate individually to dedicated folders such as /frontend or /backend, where, a process will run the commands you enter in the command field (the command you use to boot up your servers and VITE project).
 -  After you hit save, the **install dependencies** button will appear, thus allowing you to run the process once, installing everything that is required. (make sure there is a package.json file in the directories you provide).
 
-
+<img width="849" height="650" alt="image" src="https://github.com/user-attachments/assets/96b4ae8d-5f1b-4062-8af7-861f4321d263" />
