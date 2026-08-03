@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import negativeCheck from '../../../utils/negativeCheck';
 
+
+
+
+
+// Bug to fix
+// when changing the view length, data does not update accordingly, giving weird timestamps. also, it narrows down to the past instead of to the most recent.
+
 const options = {
     responsive: true,
     maintainAspectRatio: false,

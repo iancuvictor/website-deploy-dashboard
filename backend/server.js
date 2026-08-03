@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import websites from './routes/websites.js';
+import deployments from './routes/deployments.js';
 import cors from 'cors'
 import { Server } from 'socket.io';
 import {createServer} from 'http';
@@ -28,6 +29,7 @@ io.on('connection', (socket) => {
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json())
 app.use('/api/websites/', websites)
+app.use('/api/deployments/', deployments)
 
 pingLiveUpdate(io);
 

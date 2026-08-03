@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import useUpdateWebsite from "../../../utils/updateWebsite.js";
 import { intervalToDuration, formatDuration } from 'date-fns';
+import negativeCheck from "../../../utils/negativeCheck.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -85,7 +86,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
     }, [data]);
 
     const latestDowntimeDuration = useMemo(() => {
-        if (data.slice(-1)[0]?.status === false) {
+        if (data.slice(0)[0]?.status === false) {
             return 'Ongoing outage'
         } else {
             const result = [];
@@ -100,10 +101,15 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
             if (result.length < 2) {
                 return 'No downtime recorded';
             }
-            const duration = intervalToDuration({ start: new Date(result[1]), end: new Date(result[0]) });
+
+            console.log(data);
+
+            const duration = intervalToDuration({ start: new Date(result[1]), end: new Date(new Date(result[0]).getTime()) });
             return formatDuration(duration);
         }
     }, [data])
+
+
 
     function getUptimeColor(percentage: number): string {
         if (isNaN(percentage)) return 'text-gray-500';
@@ -131,16 +137,24 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
             </div>
             <div className="flex flex-row gap-4 items-center">
                 <span>
-                    Pinging frequency: every <input type='text' onChange={(e) => setForm({ ...form, pingFrequency: +e.target.value })}
+                    Pinging frequency: every <input type='text' onChange={(e) => {
+                        setForm({ ...form, pingFrequency: +e.target.value })
+                    }}
+                        onBlur={(e) => negativeCheck(e, 1)}
                         value={form.pingFrequency}
                         className="w-15 outline-none ring-1 ring-neutral-700 pr-2 pl-2" /> min
                 </span>
                 {JSON.stringify(defaultData) !== JSON.stringify(form) &&
-                    <button onClick={() => updateWebsite.mutate(form, {
+                    <button onClick={() => {
+                        if(form.pingFrequency < 1 ){
+                            toast.error(`Ping frequency cannot be smaller than 1`)
+                            return;
+                        }
+                        updateWebsite.mutate(form, {
                         onSuccess: () => {
                             queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
                         }
-                    })}
+                    })}}
                         className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
                         <FontAwesomeIcon icon={faFloppyDisk} /></button>}
             </div>
@@ -152,7 +166,9 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
             <span className="text-gray-500">Average response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{averageResponseTime} ms</span></span>
             <span className="text-gray-500">Max. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.max(...responseTimeArray)}</span></span>
             <span className="text-gray-500">Min. response time: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{Math.min(...responseTimeArray)}</span></span>
-            <span className="text-gray-500">Latest downtime duration: <span className={`${darkMode ? 'text-white' : 'text-black'}`}>{latestDowntimeDuration}</span></span>
+            <span className="text-gray-500">Latest downtime duration: {" "}
+                <span className={`${data.slice(-1)[0]?.status === false ? 'text-rose-500' : `${darkMode ? 'text-white' : 'text-black'}`}`}>{latestDowntimeDuration}</span>
+            </span>
         </div>
         <button onClick={() => requestConfirm({
             message: `Are you sure you want to delete every recorded ping? This action is permanent.`,
