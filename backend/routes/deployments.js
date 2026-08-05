@@ -64,20 +64,72 @@ routes.post('/deploy', async (req, res) => {
 
             data.temp = await runStepTemp(basePath, step.subPath);
 
-            if(data.temp.exitCode !== 0 ){
+            if (data.temp.exitCode !== 0) {
                 throw new Error(`Temp step failed with code ${data.temp.exitCode}`)
             }
 
             data.perm = await runStepPerm(basePath, step.subPath, step.command);
+
+            if (data.perm.status === 'crashed') {
+                return res.status(500).json({ message: 'Deployment failed' })
+            }
+
+            await Deployment.updateOne(
+                { _id: req.query.id, 'steps._id': step._id },
+                { $set: { 'steps.$.pid': data.perm.pid, 'steps.$.status': data.perm.status } }
+            );
         }
-        
+
         // await Deployment.updateOne({_id: req.query.id}, {lastRunStatus: data.perm.status})
-        res.status(200).json({ message: 'Success! Website is up and running', status: data.perm.status, logs: data.perm.logs})
+        res.status(200).json({ message: 'Success! Website is up and running', status: data.perm.status, logs: data.perm.logs })
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'Deployment failed', error: err })
     }
 });
+
+routes.post('/stopDeployment', async (req, res) => {
+    let deployment = await Deployment.findOne({ _id: req.query.id })
+
+    try {
+        for (let step of deployment.steps) {
+            process.kill(-step.pid, 'SIGTERM');
+        }
+
+        res.status(200).json({ message: 'Deployment successfully stopped' })
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'An error has occured', error: err.message })
+    }
+})
+
+routes.post('/installDependencies', async (req, res) => {
+    let deployment = await Deployment.findOne({ _id: req.query.id })
+    let basePath = deployment.targetType === 'local' ? deployment.localPath : deployment.remotePath
+
+    try {
+        for (let step of deployment.steps) {
+            if (!step.dependenciesInstalled) {
+
+                let data = await runStepTemp(basePath, step.subPath);
+
+                if (data.exitCode !== 0) {
+                    throw new Error(`Temp step failed with code ${data.exitCode}`)
+                }
+
+                await Deployment.updateOne(
+                    { _id: req.query.id, 'steps._id': step._id },
+                    { $set: { 'steps.$.dependenciesInstalled': true } }
+                );
+            }
+        }
+
+        res.status(200).json({ message: 'Dependencies successfully installed'})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Installing dependencies failed', error: err })
+    }
+})
 
 
 

@@ -30,9 +30,7 @@ export default function DeploymentPage() {
         } else {
             return <div className={`${darkMode ? 'text-white' : 'text-black'} absolute flex flex-col items-center gap-10 h-full w-full p-10`}>
                 <div className="flex flex-col items-center justify-center">
-                    <h1 className="text-[30px] font-[700]">{data.data.name}</h1>
-                    <a href={data.data.deploymentUrl} target="_blank"
-                        className="cursor-pointer text-[16px] text-blue-400 hover:underline underline-offset-1">{data.data.deploymentUrl}</a>
+                    <h1 className="text-[30px] font-[700]">Viewing: {data.data.name}</h1>
                 </div>
                 <MainSettings data={data} id={id} />
             </div>

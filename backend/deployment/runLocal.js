@@ -24,8 +24,7 @@ export async function runStepTemp(rootPath, subPath) {
 }
 
 export async function runStepPerm(rootPath, subPath, command) {
-
-  let joinedPath = path.join(rootPath, subPath)
+  const joinedPath = path.join(rootPath, subPath);
 
   const envContents = await fs.promises.readFile(path.join(joinedPath, '.env'), 'utf-8');
   const parsed = dotenv.parse(envContents);
@@ -35,39 +34,33 @@ export async function runStepPerm(rootPath, subPath, command) {
     shell: true,
     detached: true,
     stdio: 'pipe',
-    env: { ...process.env, ...parsed }
-  })
+    env: { ...process.env, ...parsed },
+  });
 
   child.unref();
 
-  let earlyErrors = '';
-  child.stderr?.on('data', (data) => { earlyErrors += data.toString(); });
-  child.stdout?.on('data', (data) => { earlyErrors += data.toString(); });
+  let logs = '';
+  child.stdout?.on('data', (data) => { logs += data.toString(); });
+  child.stderr?.on('data', (data) => { logs += data.toString(); });
 
-  let startupLogs = '';
-  child.stderr?.on('data', (data) => { startupLogs += data.toString(); });
-  child.stdout?.on('data', (data) => { startupLogs += data.toString(); });
-
-  return new Promise((resolve, reject) => {
-    const startupCheckTimeout = setTimeout(() => {
-
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
       child.stdout?.removeAllListeners();
       child.stderr?.removeAllListeners();
-
       child.stdout?.unref();
       child.stderr?.unref();
 
-      resolve({ status: "running", pid: child.pid, logs: startupLogs});
+      resolve({ status: 'running', pid: child.pid, logs });
     }, 3000);
 
     child.on('exit', (code) => {
-      clearTimeout(startupCheckTimeout);
-      reject(new Error(`Server crashed immediately on startup with code ${code}. Logs:\n${earlyErrors}`));
+      clearTimeout(timeout);
+      resolve({ status: 'crashed', exitCode: code, logs });
     });
 
     child.on('error', (err) => {
-      clearTimeout(startupCheckTimeout);
-      reject(err);
+      clearTimeout(timeout);
+      resolve({ status: 'crashed', error: err.message, logs });
     });
-  })
+  });
 }
