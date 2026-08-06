@@ -20,7 +20,8 @@ const deployment = new Schema({
         localUrl: {type: String, required: true, default: null},
         pid: {type: Number, default: null},
         status: {type: String, default: ''},
-        dependenciesInstalled: {type: Boolean, default: false}
+        dependenciesInstalled: {type: Boolean, default: false},
+        websiteId: {type: String, default: null}
     }],
 
     backupLocation: {type: String, required: false, default: null},

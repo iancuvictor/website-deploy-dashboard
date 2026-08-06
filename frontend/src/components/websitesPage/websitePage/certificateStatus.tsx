@@ -15,7 +15,6 @@ type LastCertProps = {
         certPinging: boolean,
         certFrequency: number,
     },
-    websiteId: string,
     lastCert: {
         authError: string | null,
         hostname: string,
@@ -40,7 +39,7 @@ type Form = {
 
 const API_URL = import.meta.env.VITE_API_URL
 
-export default function CertificateStatus({ websiteData, websiteId, lastCert }: LastCertProps) {
+export default function CertificateStatus({ websiteData, lastCert }: LastCertProps) {
     const queryClient = useQueryClient();
     const updateWebsite = useUpdateWebsite();
     const pauseResumePinging = usePauseResumePinging(websiteData._id, 'certificate');
@@ -56,7 +55,7 @@ export default function CertificateStatus({ websiteData, websiteId, lastCert }: 
     const deleteCertPings = useMutation({
         mutationFn: (websiteId: string) => axios.delete(`${API_URL}/api/websites/certificates?id=${websiteId}`),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['website', websiteId] });
+            queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] });
             toast.success(`All pings have successfuly been deleted`);
         }
     })
@@ -70,7 +69,7 @@ export default function CertificateStatus({ websiteData, websiteId, lastCert }: 
             <div className="w-full">
                 <button onClick={() => pauseResumePinging.mutate(!websiteData.certPinging, {
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                        queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
                     }
                 })}
                 className="cursor-pointer">
@@ -88,7 +87,7 @@ export default function CertificateStatus({ websiteData, websiteId, lastCert }: 
                 {JSON.stringify(defaultData) !== JSON.stringify(form) &&
                     <button onClick={() => updateWebsite.mutate(form, {
                         onSuccess: () => {
-                            queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                            queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
                         }
                     })}
                         className="absolute right-5 cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
@@ -109,7 +108,7 @@ export default function CertificateStatus({ websiteData, websiteId, lastCert }: 
             confirmText: 'Yes, delete every check.',
             denyText: 'Cancel',
             onConfirm: () => {
-                deleteCertPings.mutate(websiteId)
+                deleteCertPings.mutate(websiteData._id)
             },
         })} className="cursor-pointer bg-rose-500 hover:bg-rose-600 text-white w-40 p-2">delete checks</button>
     </div>
@@ -118,7 +117,7 @@ export default function CertificateStatus({ websiteData, websiteId, lastCert }: 
             <div className="w-full">
                 <button onClick={() => pauseResumePinging.mutate(!websiteData.certPinging, {
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                        queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
                     }
                 })}
                 className="cursor-pointer">

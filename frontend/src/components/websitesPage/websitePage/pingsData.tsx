@@ -24,14 +24,14 @@ type Ping = {
 
 type PingsDataType = {
     data: Ping[],
-    websiteId: string,
     websiteData: {
         _id: string,
         name: string,
         url: string,
         pingFrequency: number,
         pinging: boolean,
-    }
+    },
+    deploymentId: string,
 };
 
 type Form = {
@@ -40,9 +40,9 @@ type Form = {
     pingFrequency: number
 }
 
-export default function PingsData({ data, websiteId, websiteData }: PingsDataType) {
+export default function PingsData({ data, websiteData, deploymentId }: PingsDataType) {
     const { darkMode } = useContext(GlobalStatesContext);
-    const pauseResumePinging = usePauseResumePinging(websiteId, 'ping');
+    const pauseResumePinging = usePauseResumePinging(websiteData._id, 'ping', deploymentId);
     const updateWebsite = useUpdateWebsite();
     const queryClient = useQueryClient();
     const { requestConfirm } = usePopUps();
@@ -58,7 +58,10 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
     const deletePings = useMutation({
         mutationFn: (websiteId: string) => axios.delete(`${API_URL}/api/websites/pings?id=${websiteId}`),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['website', websiteId] });
+            queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] });
+            if(deploymentId !== undefined){
+                queryClient.invalidateQueries({ queryKey: ['deployment', deploymentId] });
+            }
             toast.success(`All pings have successfuly been deleted`);
         }
     })
@@ -125,7 +128,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
             <div className="w-full">
                 <button onClick={() => pauseResumePinging.mutate(!websiteData.pinging, {
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                        queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
                     }
                 })}
                     className="cursor-pointer">
@@ -152,7 +155,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
                         }
                         updateWebsite.mutate(form, {
                         onSuccess: () => {
-                            queryClient.invalidateQueries({ queryKey: ['website', websiteId] })
+                            queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
                         }
                     })}}
                         className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
@@ -175,7 +178,7 @@ export default function PingsData({ data, websiteId, websiteData }: PingsDataTyp
             confirmText: 'Yes, delete every ping.',
             denyText: 'Cancel',
             onConfirm: () => {
-                deletePings.mutate(websiteId)
+                deletePings.mutate(websiteData._id)
             },
         })} className="cursor-pointer bg-rose-500 hover:bg-rose-600 text-white w-30 p-2">delete pings</button>
     </div>

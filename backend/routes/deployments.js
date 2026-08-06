@@ -1,6 +1,10 @@
 import express from "express";
 import Deployment from "../schemas/deployment.js";
 import { runStepTemp, runStepPerm } from "../deployment/runLocal.js";
+import Backup from "../schemas/backup.js";
+import Website from "../schemas/website.js";
+import Ping from "../schemas/ping.js";
+import Certificate from "../schemas/certificate.js";
 
 const routes = express.Router();
 
@@ -14,10 +18,26 @@ routes.get('/', async (req, res) => {
     res.status(200).json(data);
 })
 
-routes.get('/deployment', async (req, res) => {
-    let data = await Deployment.findOne({ _id: req.query.id });
+routes.get('/deployment/:id', async (req, res) => {
+    let data = {};
+    data.deployment = await Deployment.findOne({ _id: req.params.id });
+    data.backups = await Backup.find({ deploymentId: req.params.id });
+    data.websites = [];
+    for (let step of data.deployment.steps) {
+        let websiteData = await Website.findOne({ stepId: step.id })
+        let pingsData = await Ping.find({ websiteId: websiteData._id }).sort({ createdAt: -1 });
+        let lastCert = await Certificate.find({ websiteId: websiteData._id }).sort({ createdAt: -1 })[0];
+        console.log(lastCert);
 
-    if (data === null) {
+        let stepWebsiteData = {
+            website: websiteData,
+            pings: pingsData,
+            certificate: lastCert
+        }
+        data.websites.push(stepWebsiteData);
+    }
+
+    if (data.deployment === null) {
         return res.status(404).json({ message: 'Deployment not found' })
     }
 
@@ -25,8 +45,26 @@ routes.get('/deployment', async (req, res) => {
 })
 
 routes.put('/deployment', async (req, res) => {
+    const deployment = await Deployment.findOne({ _id: req.query.id }, { name: 1, steps: 1 }).lean();
+
     try {
         await Deployment.updateOne({ _id: req.query.id }, { $set: req.body })
+        for (let step of deployment.steps) {
+            if (step.websiteId === null) {
+                let newWebsite = await Website.create({
+                    name: deployment.name,
+                    url: step.deploymentUrl,
+                    pingFrequency: 1,
+                    pinging: false,
+                    certFrequency: 1,
+                    certPinging: false,
+                    stepId: step._id
+                });
+                await Deployment.updateOne({ _id: req.query.id, 'steps._id': step._id }, { 'steps.$.websiteId': newWebsite._id })
+            } else {
+                await Website.updateOne({ stepId: step._id }, { $set: { url: step.deploymentUrl } })
+            }
+        }
         res.status(200).json({ message: 'Deployment updated' });
     } catch (err) {
         console.log(err);
@@ -36,11 +74,11 @@ routes.put('/deployment', async (req, res) => {
 })
 
 routes.put('/deployment/:id/backup', async (req, res) => {
-    try{
-        await Deployment.updateOne({_id: req.params.id}, {$set: {backupLocation: req.body.backupLocation}})
-        res.status(200).json({message: 'Backup data successfully updated'})
-    } catch(err) {
-        res.status(500).json({message: 'An error has occured'});
+    try {
+        await Deployment.updateOne({ _id: req.params.id }, { $set: { backupLocation: req.body.backupLocation } })
+        res.status(200).json({ message: 'Backup data successfully updated' })
+    } catch (err) {
+        res.status(500).json({ message: 'An error has occured' });
     }
 })
 
@@ -101,9 +139,14 @@ routes.post('/stopDeployment', async (req, res) => {
 
     try {
         for (let step of deployment.steps) {
-            process.kill(-step.pid, 'SIGTERM');
+            if (!step.pid) continue;
+            try {
+                process.kill(-step.pid, 'SIGTERM');
+            } catch (err) {
+                console.log(`Step ${step._id} already dead:`, err.message);
+            }
+            await Deployment.updateOne({ _id: req.query.id, 'steps._id': step._id }, { $set: { 'steps.$.pid': null } })
         }
-
         res.status(200).json({ message: 'Deployment successfully stopped' })
     } catch (err) {
         console.log(err);
@@ -132,7 +175,7 @@ routes.post('/installDependencies', async (req, res) => {
             }
         }
 
-        res.status(200).json({ message: 'Dependencies successfully installed'})
+        res.status(200).json({ message: 'Dependencies successfully installed' })
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'Installing dependencies failed', error: err })
@@ -140,9 +183,26 @@ routes.post('/installDependencies', async (req, res) => {
 })
 
 routes.post('/deployment/:id/backup', async (req, res) => {
-    console.log(req.query);
-    console.log(req.params);
-    res.status(200).json({message: 'Backup successfully created'})
+    const deployment = await Deployment.findOne({ _id: req.params.id }, { backupLocation: 1 }).lean();
+    const mostRecent = await Backup.find().sort({ _id: -1 }).limit(1);
+
+    if (!deployment) {
+        return res.status(404).json({ error: "Deployment not found" });
+    }
+
+    let backupLocation = deployment.backupLocation;
+
+    try {
+        await Backup.create({
+            deploymentId: deployment._id,
+            path: backupLocation,
+            active: false,
+        })
+        await Backup.updateOne({ _id: mostRecent._id }, { $set: { active: true } })
+        res.status(200).json({ message: 'Backup successfully created' })
+    } catch (err) {
+        res.status(500).json({ message: 'An error has occured' })
+    }
 })
 
 

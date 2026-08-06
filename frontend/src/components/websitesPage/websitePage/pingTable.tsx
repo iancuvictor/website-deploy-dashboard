@@ -3,12 +3,12 @@ import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext"
 import PingCard from "../../pingCard/pingCard"
 
 type Ping = {
+    _id: string,
     createdAt: string,
-    responseTime: 0,
-    status: boolean,
     updatedAt: string,
     websiteId: string,
-    _id: string,
+    responseTime: number,
+    status: boolean,
 }
 
 type PingTableProps = {
@@ -17,7 +17,7 @@ type PingTableProps = {
 }
 
 
-export default function PingTable({pingsData, status} : PingTableProps) {
+export default function PingTable({pingsData} : PingTableProps) {
     const { darkMode } = useContext(GlobalStatesContext);
 
     return <div className={`flex flex-col h-100 w-100 ring-1 ring-neutral-700 overflow-hidden overflow-y-scroll`}>

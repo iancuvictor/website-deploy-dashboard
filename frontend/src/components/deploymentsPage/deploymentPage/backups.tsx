@@ -4,14 +4,22 @@ import { usePopUps } from "../../../contexts/PopUpsContext";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+type Backup = {
+    _id: string,
+    deploymentId: string,
+    active: boolean,
+    createdAt: string,
+}
 
 type BackupsProps = {
     id: string,
     path: string,
     backupLocation: string | null,
+    backupData: Backup[]
 }
 
 type Form = {
@@ -19,7 +27,9 @@ type Form = {
 }
 
 
-export default function Backups({ id, path, backupLocation }: BackupsProps) {
+export default function Backups({ id, path, backupLocation, backupData }: BackupsProps) {
+
+    console.log(backupLocation);
 
     const { requestConfirm } = usePopUps();
     const queryClient = useQueryClient()
@@ -33,6 +43,7 @@ export default function Backups({ id, path, backupLocation }: BackupsProps) {
     const createBackup = useMutation({
         mutationFn: (id: string) => axios.post(`${API_URL}/api/deployments/deployment/${id}/backup?path=${path}`),
         onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['deployment', id]})
             toast.success(`Backup created successfully`);
         }
     })
@@ -45,21 +56,28 @@ export default function Backups({ id, path, backupLocation }: BackupsProps) {
         }
     })
 
-    return <div className="ring-1 ring-neutral-700 p-5 w-100 h-150 flex flex-col gap-3">
-        <span className="text-[18px]">Backups [Root folder]</span>
+    return <div className="ring-1 ring-neutral-700 p-5 w-100 h-100 flex flex-col gap-3">
+        <span className="text-[18px]">Backups [from root folder]</span>
         <div className="flex flex-col gap-1">
             {!form.backupLocation && <span className='text-rose-500 text-[14px]'>Please enter a backup path</span>}
-            <span >Backups location:</span>
+            <span >location:</span>
             <div className="flex flex-row gap-2">
-                <input type="text" className={formInputStyle} onChange={(e) => setForm({ ...form, backupLocation: e.target.value })}
+                <input type="text" className={formInputStyle} 
+                value={form.backupLocation}
+                onChange={(e) => setForm({ ...form, backupLocation: e.target.value })}
                     placeholder="Backups location path has not been specified" />
                 {backupLocation !== form.backupLocation && <button onClick={() => updateBackupData.mutate({id, form})}
                     className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out w-fit">
                     <FontAwesomeIcon icon={faFloppyDisk} /></button>}
             </div>
         </div>
-        <div className="w-full h-full ring-1 ring-neutral-700">
-
+        <div className="flex flex-col w-full h-full ring-1 ring-neutral-700 overflow-y-scroll">
+            {backupData.length > 0 ? backupData.map((backup) => {
+                return <div key={backup._id} className="w-full flex flex-row justify-between p-3"> 
+                    <span>{backup.createdAt}</span>
+                    <FontAwesomeIcon icon={faCircle} className={backup.active ? 'text-green-500' : 'text-neutral-700'} />
+                </div>
+            }) : <span className="w-full text-center p-3">No backups have been created yet</span>}
         </div>
         <button onClick={() => requestConfirm({
             message: 'Are you sure you want to create a backup?',

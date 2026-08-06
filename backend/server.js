@@ -16,6 +16,11 @@ const io = new Server(server, {
   }
 })
 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
 const port = process.env.PORT;
 
 mongoose.connect(process.env.MONGO_URL)

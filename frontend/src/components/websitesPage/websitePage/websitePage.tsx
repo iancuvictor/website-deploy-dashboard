@@ -17,7 +17,7 @@ import { io } from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const socket = io(import.meta.env.VITE_API_URL);
+const socket = io(API_URL);
 
 export default function WebsitePage() {
     const { requestConfirm } = usePopUps();
@@ -89,11 +89,11 @@ export default function WebsitePage() {
                     </div> */}
                     <div className="flex flex-col gap-2">
                         <span>Ping data:</span>
-                        <PingsData data={pingsData} websiteId={id} websiteData={websiteData} />
+                        <PingsData data={pingsData} websiteData={websiteData} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <span>SSL Certificate:</span>
-                        <CertificateStatus websiteData={websiteData} websiteId={id} lastCert={certData.slice(-1)[0]} />
+                        <CertificateStatus websiteData={websiteData} lastCert={certData.slice(-1)[0]} />
                     </div>
                 </div>
                 <div className="flex flex-row w-320 ring-1 ring-neutral-700 p-5">

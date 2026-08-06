@@ -1,10 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faEye, faPlus, faX } from "@fortawesome/free-solid-svg-icons"
-import { useState, useEffect, useMemo } from "react"
+import { faChevronRight, faCircle, faEye, faEyeSlash, faPlus, faX } from "@fortawesome/free-solid-svg-icons"
+import { useState, useEffect, useMemo, useContext } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import axios from "axios"
 import { toast } from "sonner"
 import { usePopUps } from "../../../contexts/PopUpsContext"
+import { type Dispatch, type SetStateAction } from "react"
+import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext"
 
 type Step = {
     subPath: string,
@@ -22,6 +24,7 @@ type DeploymentData = {
     deploymentUrl: string,
     localPath: string,
     remotePath: string,
+    backupLocation: string,
     host: string,
     lastRunAt: string,
     lastRunOutput: string,
@@ -36,18 +39,19 @@ type DeploymentData = {
 }
 
 type MainSettingsProps = {
-    data: any,
-    id: string
+    data: DeploymentData,
+    id: string,
+    viewWebsite: number,
+    setViewWebsite: Dispatch<SetStateAction<number>>; 
 }
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function MainSettings({ data, id }: MainSettingsProps) {
-    let deploymentData = data?.data;
-
+export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: MainSettingsProps) {
+    const { darkMode } = useContext(GlobalStatesContext)
     const formInputStyle = `px-3 py-2.5 ring-1 ring-neutral-700 rounded-xs text-[14px] w-full no-underline`;
 
-    const [form, setForm] = useState<DeploymentData>(deploymentData)
+    const [form, setForm] = useState<DeploymentData>(data)
 
     let path = form?.targetType === 'local' ? form?.localPath : form?.remotePath
     let formPath = form?.targetType === 'local' ? 'localPath' : 'remotePath'
@@ -90,14 +94,14 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
     })
 
     const areDependenciesInstalled = useMemo(() => {
-        return deploymentData.steps.filter((step) => step.dependenciesInstalled === false).length === 0
+        return data.steps.filter((step) => step.dependenciesInstalled === false).length === 0
     }, [data])
 
     useEffect(() => {
-        setForm(deploymentData)
+        setForm(data)
     }, [data])
 
-    let saveButtonActive = JSON.stringify(deploymentData) !== JSON.stringify(form)
+    let saveButtonActive = JSON.stringify(data) !== JSON.stringify(form)
 
     return <div>
         <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200">
@@ -122,7 +126,7 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-col gap-3">
                         {form.steps.map((step, i) => {
-                            return <div key={i} className="flex flex-col gap-3 ring-1 ring-neutral-700 p-3 bg-neutral-900">
+                            return <div key={i} className={`${darkMode ? 'bg-neutral-900' : 'bg-white'} flex flex-col gap-3 ring-1 ring-neutral-700 p-3`}>
                                 <div className="flex flex-row items-center justify-center gap-3">
                                     <span>Route</span>
                                     <input type="text"
@@ -174,6 +178,20 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
                                         })}
                                         placeholder="eg. https://www.yoursite.com/" />
                                 </div>
+                                <div className="flex flex-row justify-between gap-5">
+                                    <div className="flex flex-row gap-5">
+                                    <span>Process ID: {step.pid || 'No process'}</span>
+                                    <span>Status: {step.pid ? 'Active' : 'Down'} {" "}
+                                        <FontAwesomeIcon icon={faCircle} className={step.pid ? 'text-green-500' : 'text-neutral-700'} />
+                                    </span>
+                                    </div>
+                                    <button onClick={() => setViewWebsite(i)}
+                                    className={`${viewWebsite === i ? 'text-white' : 'text-neutral-500 hover:text-white' } 
+                                    cursor-pointer text-center align-center duration-75 ease-out`}>
+                                        {viewWebsite === i ? 'Viewing data' : 'View data'} {" "}
+                                        <FontAwesomeIcon icon={faChevronRight} />
+                                    </button>
+                                </div>
                             </div>
                         })}
                     </div>
@@ -208,9 +226,6 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
                         shadow-green-500 hover:shadow-green-600 ring-1 ring-neutral-700 p-2 rounded-xs">Deploy website</button>
                     </div>
                 </div>
-                <button className="cursor-pointer text-neutral-500 hover:text-white">
-                    <FontAwesomeIcon icon={faEye} />
-                </button>
             </div>
         </div>
     </div>
