@@ -33,9 +33,9 @@ export default function DeploymentsPage() {
     flex flex-col gap-5 items-center w-full p-10`}>
                 <h1 className="font-[700] text-[30px]">DEPLOYMENTS</h1>
                 <div className="flex flex-row gap-10">
-                    {deployments.map((deployment) => {
+                    {deployments.length > 0 ? deployments.map((deployment) => {
                         return <DeploymentCard data={deployment} />
-                    })}
+                    }) : <div className="p-10 ring-1 ring-neutral-700">No deployments yet</div>}
                 </div>
             </div>
         }

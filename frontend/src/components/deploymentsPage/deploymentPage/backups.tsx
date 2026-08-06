@@ -28,9 +28,7 @@ type Form = {
 
 
 export default function Backups({ id, path, backupLocation, backupData }: BackupsProps) {
-
-    console.log(backupLocation);
-
+    
     const { requestConfirm } = usePopUps();
     const queryClient = useQueryClient()
 
@@ -56,8 +54,8 @@ export default function Backups({ id, path, backupLocation, backupData }: Backup
         }
     })
 
-    return <div className="ring-1 ring-neutral-700 p-5 w-100 h-100 flex flex-col gap-3">
-        <span className="text-[18px]">Backups [from root folder]</span>
+    return <div className="ring-1 ring-neutral-700 p-5 w-100 h-100 flex flex-col gap-1">
+        <span className="text-[16px]">Backups [from root folder]</span>
         <div className="flex flex-col gap-1">
             {!form.backupLocation && <span className='text-rose-500 text-[14px]'>Please enter a backup path</span>}
             <span >location:</span>

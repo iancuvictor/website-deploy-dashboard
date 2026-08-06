@@ -42,7 +42,7 @@ type MainSettingsProps = {
     data: DeploymentData,
     id: string,
     viewWebsite: number,
-    setViewWebsite: Dispatch<SetStateAction<number>>; 
+    setViewWebsite: Dispatch<SetStateAction<number>>;
 }
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -102,6 +102,8 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
     }, [data])
 
     let saveButtonActive = JSON.stringify(data) !== JSON.stringify(form)
+
+    let stopDeploymentButton = form.steps.filter((step) => step.pid !== null).length > 0;
 
     return <div>
         <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200">
@@ -180,13 +182,13 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                                 </div>
                                 <div className="flex flex-row justify-between gap-5">
                                     <div className="flex flex-row gap-5">
-                                    <span>Process ID: {step.pid || 'No process'}</span>
-                                    <span>Status: {step.pid ? 'Active' : 'Down'} {" "}
-                                        <FontAwesomeIcon icon={faCircle} className={step.pid ? 'text-green-500' : 'text-neutral-700'} />
-                                    </span>
+                                        <span>Process ID: {step.pid || 'No process'}</span>
+                                        <span>Status: {step.pid ? 'Active' : 'Down'} {" "}
+                                            <FontAwesomeIcon icon={faCircle} className={step.pid ? 'text-green-500' : 'text-neutral-700'} />
+                                        </span>
                                     </div>
                                     <button onClick={() => setViewWebsite(i)}
-                                    className={`${viewWebsite === i ? 'text-white' : 'text-neutral-500 hover:text-white' } 
+                                        className={`${viewWebsite === i ? 'text-white' : 'text-neutral-500 hover:text-white'} 
                                     cursor-pointer text-center align-center duration-75 ease-out`}>
                                         {viewWebsite === i ? 'Viewing data' : 'View data'} {" "}
                                         <FontAwesomeIcon icon={faChevronRight} />
@@ -205,15 +207,13 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                 </div>
                 <div className="w-full flex flex-row justify-between">
                     <button disabled={!saveButtonActive} onClick={() => {
-                        console.log('hit');
                         updateDeploymentData.mutate(form)
                     }}
                         className={`${saveButtonActive ? 'cursor-pointer bg-green-500 hover:bg-green-600' : 'text-neutral-700'} 
                         ring-1 ring-neutral-700 p-2 w-fit duration-75 ease-out`}>Save changes</button>
 
                     <div className="flex flex-row gap-5">
-
-                        <button onClick={() => requestConfirm({
+                        {stopDeploymentButton ? <button onClick={() => requestConfirm({
                             message: 'Are you sure you want to stop the deployment?',
                             confirmText: 'Yes, close connection',
                             denyText: 'No',
@@ -221,9 +221,9 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                         })}
                             className="cursor-pointer w-fit bg-rose-500 hover:bg-rose-600 shadow-lg/40 
                     shadow-rose-500 hover:shadow-rose-600 ring-1 ring-neutral-700 p-2 rounded-xs">Stop deployment</button>
-                        <button onClick={() => deployWebsite.mutate(id)}
-                            className="cursor-pointer w-fit bg-green-500 hover:bg-green-600 shadow-lg/40 
-                        shadow-green-500 hover:shadow-green-600 ring-1 ring-neutral-700 p-2 rounded-xs">Deploy website</button>
+                            : <button onClick={() => deployWebsite.mutate(id)}
+                                className="cursor-pointer w-fit bg-green-500 hover:bg-green-600 shadow-lg/40 
+                        shadow-green-500 hover:shadow-green-600 ring-1 ring-neutral-700 p-2 rounded-xs">Deploy website</button>}
                     </div>
                 </div>
             </div>

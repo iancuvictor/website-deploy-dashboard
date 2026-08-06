@@ -85,12 +85,12 @@ export default function DeploymentPage() {
                 </div>
                 <div className="flex flex-row gap-10">
                     <MainSettings data={deploymentData} id={id} viewWebsite={viewWebsite} setViewWebsite={setViewWebsite} />
-                    <div className="w-205 flex flex-row flex-wrap gap-5">
+                    {websitesData && websitesData.length > 0 && <div className="w-205 flex flex-row flex-wrap gap-5">
                         <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id}/>
                         <PingTable pingsData={websitesData[viewWebsite].pings} status={true} />
                         <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id}/>
                         <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation} backupData={backupData} />
-                    </div>
+                    </div>}
                 </div>
                 <button onClick={() => requestConfirm({
                     message: `Are you SURE you want to delete this deployment? All the data that's been recorded with it will be PERMANENTLY deleted! This acction cannot be undone!`,

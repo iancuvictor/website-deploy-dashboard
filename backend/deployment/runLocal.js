@@ -26,8 +26,13 @@ export async function runStepTemp(rootPath, subPath) {
 export async function runStepPerm(rootPath, subPath, command) {
   const joinedPath = path.join(rootPath, subPath);
 
-  const envContents = await fs.promises.readFile(path.join(joinedPath, '.env'), 'utf-8');
-  const parsed = dotenv.parse(envContents);
+  let doesEnvExist = fs.existsSync(path.join(joinedPath, '.env'));
+  let parsed = {};
+
+  if (doesEnvExist) {
+    const envContents = await fs.promises.readFile(path.join(joinedPath, '.env'), 'utf-8');
+    parsed = dotenv.parse(envContents);
+  }
 
   const child = spawn(command, {
     cwd: joinedPath,
@@ -65,6 +70,6 @@ export async function runStepPerm(rootPath, subPath, command) {
   });
 }
 
-export async function createLocalBackup(){
-  
+export async function createLocalBackup() {
+
 }

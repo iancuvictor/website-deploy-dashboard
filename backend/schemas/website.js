@@ -9,6 +9,7 @@ const website = new Schema({
     certFrequency: {type: Number, min: [1, `Cert frequency cannot be 0 or negative`], default: 1, required: true},
     certPinging: {type: Boolean, default: true, required: true},
     stepId: {type: Schema.Types.ObjectId, default: null},
+    deploymentId: {type: Schema.Types.ObjectId, default: null},
 });
 
 const Website = model('Website', website);

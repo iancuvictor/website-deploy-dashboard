@@ -10,11 +10,6 @@ const routes = express.Router();
 
 routes.get('/', async (req, res) => {
     let data = await Deployment.find();
-
-    if (data.length === 0) {
-        return res.status(404).json({ message: 'No deployments found' });
-    }
-
     res.status(200).json(data);
 })
 
@@ -25,6 +20,9 @@ routes.get('/deployment/:id', async (req, res) => {
     data.websites = [];
     for (let step of data.deployment.steps) {
         let websiteData = await Website.findOne({ stepId: step.id })
+        if(!websiteData){
+            break;
+        }
         let pingsData = await Ping.find({ websiteId: websiteData._id }).sort({ createdAt: -1 });
         let lastCert = await Certificate.find({ websiteId: websiteData._id }).sort({ createdAt: -1 })[0];
 
@@ -44,10 +42,9 @@ routes.get('/deployment/:id', async (req, res) => {
 })
 
 routes.put('/deployment', async (req, res) => {
-    const deployment = await Deployment.findOne({ _id: req.query.id }, { name: 1, steps: 1 }).lean();
-
     try {
-        await Deployment.updateOne({ _id: req.query.id }, { $set: req.body })
+        const deployment = await Deployment.findOneAndUpdate({ _id: req.query.id }, { $set: req.body }, {new: true})
+        
         for (let step of deployment.steps) {
             if (step.websiteId === null) {
                 let newWebsite = await Website.create({
@@ -57,7 +54,8 @@ routes.put('/deployment', async (req, res) => {
                     pinging: false,
                     certFrequency: 1,
                     certPinging: false,
-                    stepId: step._id
+                    stepId: step._id,
+                    deploymentId: deployment._id
                 });
                 await Deployment.updateOne({ _id: req.query.id, 'steps._id': step._id }, { 'steps.$.websiteId': newWebsite._id })
             } else {
@@ -201,6 +199,23 @@ routes.post('/deployment/:id/backup', async (req, res) => {
         res.status(200).json({ message: 'Backup successfully created' })
     } catch (err) {
         res.status(500).json({ message: 'An error has occured' })
+    }
+})
+
+routes.delete('/deployment', async (req, res) => {
+    try{
+        await Backup.deleteMany({deploymentId: req.query.id});
+        
+        let websites = await Website.find({deploymentId: req.query.id})
+        for(let website of websites){
+            await Ping.deleteMany({websiteId: website._id})
+            await Certificate.deleteMany({websiteId: website._id});
+        }
+        await Website.deleteMany({deploymentId: req.query.id});
+        await Deployment.deleteOne({_id: req.query.id});
+        res.status(200).json({message: 'Deployment deleted'});
+    } catch(err) {
+        res.status(500).json({message: 'An error has occured'});
     }
 })
 
