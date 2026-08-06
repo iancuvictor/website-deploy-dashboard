@@ -111,7 +111,7 @@ routes.post('/deploy', async (req, res) => {
                 throw new Error(`Temp step failed with code ${data.temp.exitCode}`)
             }
 
-            data.perm = await runStepPerm(basePath, step.subPath, step.command);
+            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id );
 
             if (data.perm.status === 'crashed') {
                 return res.status(500).json({ message: 'Deployment failed' })

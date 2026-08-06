@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faChevronRight, faCircle, faEye, faEyeSlash, faPlus, faX } from "@fortawesome/free-solid-svg-icons"
+import { faChevronRight, faCircle, faCircleNotch, faEye, faEyeSlash, faPlus, faX } from "@fortawesome/free-solid-svg-icons"
 import { useState, useEffect, useMemo, useContext } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import axios from "axios"
@@ -52,6 +52,9 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
     const formInputStyle = `px-3 py-2.5 ring-1 ring-neutral-700 rounded-xs text-[14px] w-full no-underline`;
 
     const [form, setForm] = useState<DeploymentData>(data)
+    const [uiEffects, setUiEffects] = useState({
+        deploying: false,
+    })
 
     let path = form?.targetType === 'local' ? form?.localPath : form?.remotePath
     let formPath = form?.targetType === 'local' ? 'localPath' : 'remotePath'
@@ -73,6 +76,7 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
         mutationFn: (id: string) => axios.post(`${API_URL}/api/deployments/deploy?id=${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['deployment', id] })
+            setUiEffects({...uiEffects, deploying: false})
             toast.success(`Website successfully deployed`);
         }
     })
@@ -106,7 +110,7 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
     let stopDeploymentButton = form.steps.filter((step) => step.pid !== null).length > 0;
 
     return <div>
-        <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200">
+        <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200 h-205">
             <div className="flex flex-col gap-3">
                 <span className="text-[18px] text-neutral-500">Basic information</span>
                 <div className="flex flex-col gap-3">
@@ -124,11 +128,16 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                 </div>
             </div>
             <div className="flex flex-col gap-3">
-                <span className="text-[18px] text-neutral-500">Routes and package management</span>
+                <div className="flex flex-row gap-3 items-center">
+                    <span className="text-[16px] text-neutral-500">Routes and package management</span>
+                    <button onClick={() => setForm({ ...form, steps: [...form.steps, { subPath: '', command: '' }] })}
+                        className="cursor-pointer hover:bg-neutral-900 ring-1 ring-neutral-700 p-2 w-fit text-[14px]">Add sub-route {" "}
+                        <FontAwesomeIcon icon={faPlus} /></button>
+                </div>
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-3">
+                    <div className={`${darkMode ? 'bg-neutral-950' : 'bg-white'} flex flex-col gap-3 overflow-y-scroll h-105 p-2`}>
                         {form.steps.map((step, i) => {
-                            return <div key={i} className={`${darkMode ? 'bg-neutral-900' : 'bg-white'} flex flex-col gap-3 ring-1 ring-neutral-700 p-3`}>
+                            return <div key={i} className={`${darkMode ? 'bg-neutral-900' : 'bg-white'} flex flex-col gap-2 ring-1 ring-neutral-700 p-3`}>
                                 <div className="flex flex-row items-center justify-center gap-3">
                                     <span>Route</span>
                                     <input type="text"
@@ -150,7 +159,12 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                                             })
                                         })}
                                         placeholder="eg. npm run dev" />
-                                    <button onClick={() => setForm({ ...form, steps: form.steps.filter((step, index) => index !== i) })}
+                                    <button onClick={() => requestConfirm({
+                                        message: 'Are you sure you want to delete this sub-route? You can undo this by reloading the page.',
+                                        confirmText: 'Yes, delete sub-route',
+                                        denyText: 'Cancel',
+                                        onConfirm: () => setForm({ ...form, steps: form.steps.filter((step, index) => index !== i) })
+                                    })}
                                         className="cursor-pointer bg-rose-500 hover:bg-rose-600 p-2 rounded-xs">
                                         <FontAwesomeIcon icon={faX} />
                                     </button>
@@ -197,9 +211,6 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                             </div>
                         })}
                     </div>
-                    <button onClick={() => setForm({ ...form, steps: [...form.steps, { subPath: '', command: '' }] })}
-                        className="cursor-pointer hover:bg-neutral-900 ring-1 ring-neutral-700 p-2 w-fit">Add sub-route {" "}
-                        <FontAwesomeIcon icon={faPlus} /></button>
                     {areDependenciesInstalled && <span className="text-green-500 text-[14px]">All dependencies have been installed</span>}
                     <button onClick={() => installDependencies.mutate(id)}
                         className={`${formInputStyle} cursor-pointer hover:bg-neutral-900 active:bg-black`}>
@@ -209,8 +220,9 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                     <button disabled={!saveButtonActive} onClick={() => {
                         updateDeploymentData.mutate(form)
                     }}
-                        className={`${saveButtonActive ? 'cursor-pointer bg-green-500 hover:bg-green-600' : 'text-neutral-700'} 
-                        ring-1 ring-neutral-700 p-2 w-fit duration-75 ease-out`}>Save changes</button>
+                        className={`${saveButtonActive ? 'cursor-pointer bg-green-500 shadow-md/40 shadow-green-500 hover:bg-green-600' 
+                        : 'ring-1 ring-neutral-700 text-neutral-700'} 
+                        p-2 w-fit duration-75 ease-out`}>Save changes</button>
 
                     <div className="flex flex-row gap-5">
                         {stopDeploymentButton ? <button onClick={() => requestConfirm({
@@ -221,9 +233,15 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                         })}
                             className="cursor-pointer w-fit bg-rose-500 hover:bg-rose-600 shadow-lg/40 
                     shadow-rose-500 hover:shadow-rose-600 ring-1 ring-neutral-700 p-2 rounded-xs">Stop deployment</button>
-                            : <button onClick={() => deployWebsite.mutate(id)}
+                            : <button onClick={() => {
+                                setUiEffects({ ...uiEffects, deploying: true })
+                                deployWebsite.mutate(id)
+                            }}
                                 className="cursor-pointer w-fit bg-green-500 hover:bg-green-600 shadow-lg/40 
-                        shadow-green-500 hover:shadow-green-600 ring-1 ring-neutral-700 p-2 rounded-xs">Deploy website</button>}
+                        shadow-green-500 hover:shadow-green-600 ring-1 ring-neutral-700 p-2 rounded-xs text-center align-center">
+                                {uiEffects.deploying ? 'Deploying...' : 'Deploy website'} {" "}
+                                {uiEffects.deploying && <FontAwesomeIcon icon={faCircleNotch} spin />}
+                            </button>}
                     </div>
                 </div>
             </div>

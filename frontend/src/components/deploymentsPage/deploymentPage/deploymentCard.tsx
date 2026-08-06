@@ -11,10 +11,9 @@ type DeploymentCardProps = {
 
 
 export default function DeploymentCard({data} : DeploymentCardProps){
-    return <div className="relative flex flex-col gap-2 w-100 h-fit p-5 ring-1 ring-neutral-700 rounded-xs">
+    return <div className="relative flex flex-col items-center gap-2 w-100 h-fit p-5 ring-1 ring-neutral-700 rounded-xs">
         <NavLink to={`${data._id}`} className='absolute top-0 left-0 h-full w-full'></NavLink>
         <span className="text-[18px] font-[700]">{data.name}</span>
         <span>Deployment type: {data.targetType}</span>
-        <span>{data.deploymentUrl}</span>
     </div>
 }

@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import { io } from '../server.js';
 
 
 export async function runStepTemp(rootPath, subPath) {
@@ -23,7 +24,7 @@ export async function runStepTemp(rootPath, subPath) {
   });
 }
 
-export async function runStepPerm(rootPath, subPath, command) {
+export async function runStepPerm(rootPath, subPath, command, stepId) {
   const joinedPath = path.join(rootPath, subPath);
 
   let doesEnvExist = fs.existsSync(path.join(joinedPath, '.env'));
@@ -45,8 +46,16 @@ export async function runStepPerm(rootPath, subPath, command) {
   child.unref();
 
   let logs = '';
-  child.stdout?.on('data', (data) => { logs += data.toString(); });
-  child.stderr?.on('data', (data) => { logs += data.toString(); });
+  child.stdout?.on('data', (data) => {
+    const chunk = data.toString();
+    logs += chunk;
+    io.emit('deployLog', { stepId, chunk });
+  });
+  child.stderr?.on('data', (data) => {
+    const chunk = data.toString();
+    logs += chunk;
+    io.emit('deployLog', { stepId, chunk });
+  });
 
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {

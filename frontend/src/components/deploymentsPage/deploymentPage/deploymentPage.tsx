@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { type AxiosResponse, AxiosError } from "axios";
-import { useContext, useState, useEffect} from "react";
+import { useContext, useState, useEffect } from "react";
 import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext";
 import ErrorPage from "../../errorPages/errorPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +16,7 @@ import CertificateStatus from "../../websitesPage/websitePage/certificateStatus"
 import { usePopUps } from "../../../contexts/PopUpsContext";
 import { toast } from "sonner";
 import { io } from "socket.io-client";
+import Logs from "./logs";
 
 
 type Ping = {
@@ -43,13 +44,13 @@ export default function DeploymentPage() {
         queryFn: () => axios.get(`${API_URL}/api/deployments/deployment/${id}`),
     });
 
-    
+
     const deploymentData = data?.data.deployment;
     const backupData = data?.data.backups;
     const path = deploymentData?.targetType === 'local' ? deploymentData?.localPath : deploymentData?.remotePath
     const websitesData = data?.data?.websites
     const [viewWebsite, setViewWebsite] = useState(0)
-    
+
     const deleteDeployment = useMutation({
         mutationFn: (id: string) => axios.delete(`${API_URL}/api/deployments/deployment?id=${id}`),
         onSuccess: () => {
@@ -79,19 +80,22 @@ export default function DeploymentPage() {
                 <FontAwesomeIcon icon={faCircleNotch} spin />
             </div>
         } else {
-            return <div className={`${darkMode ? 'text-white' : 'text-black'} flex flex-col items-center gap-10 h-full w-full p-10`}>
+            return <div className={`${darkMode ? 'text-white' : 'text-black'} flex flex-col 2 gap-10 h-full w-full p-10`}>
                 <div className="flex flex-col items-center justify-center">
                     <h1 className="text-[30px] font-[700]">Viewing: {deploymentData.name}</h1>
                 </div>
-                <div className="flex flex-row gap-10">
+                <div className="w-full flex flex-col items-start gap-5">
+                <div className="flex flex-row gap-5">
                     <MainSettings data={deploymentData} id={id} viewWebsite={viewWebsite} setViewWebsite={setViewWebsite} />
                     {websitesData && websitesData.length > 0 && <div className="w-205 flex flex-row flex-wrap gap-5">
-                        <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id}/>
+                        <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id} />
                         <PingTable pingsData={websitesData[viewWebsite].pings} status={true} />
-                        <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id}/>
+                        <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id} />
                         <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation} backupData={backupData} />
                     </div>}
                 </div>
+                    <Logs stepId={deploymentData?.steps[viewWebsite]?._id}/>
+                    </div>
                 <button onClick={() => requestConfirm({
                     message: `Are you SURE you want to delete this deployment? All the data that's been recorded with it will be PERMANENTLY deleted! This acction cannot be undone!`,
                     confirmText: `Yes, permanently delete deployment`,
