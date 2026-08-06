@@ -30,6 +30,7 @@ type LastCertProps = {
         websiteId: string,
         _id: string
     }
+    deploymentId: string,
 }
 
 type Form = {
@@ -39,10 +40,10 @@ type Form = {
 
 const API_URL = import.meta.env.VITE_API_URL
 
-export default function CertificateStatus({ websiteData, lastCert }: LastCertProps) {
+export default function CertificateStatus({ websiteData, lastCert, deploymentId }: LastCertProps) {
     const queryClient = useQueryClient();
     const updateWebsite = useUpdateWebsite();
-    const pauseResumePinging = usePauseResumePinging(websiteData._id, 'certificate');
+    const pauseResumePinging = usePauseResumePinging(websiteData._id, 'certificate', deploymentId);
     const { requestConfirm } = usePopUps();
 
     let defaultData = {
@@ -56,6 +57,9 @@ export default function CertificateStatus({ websiteData, lastCert }: LastCertPro
         mutationFn: (websiteId: string) => axios.delete(`${API_URL}/api/websites/certificates?id=${websiteId}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] });
+            if(deploymentId !== undefined){
+                queryClient.invalidateQueries({ queryKey: ['deployment', deploymentId] });
+            }
             toast.success(`All pings have successfuly been deleted`);
         }
     })

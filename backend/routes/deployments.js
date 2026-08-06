@@ -27,7 +27,6 @@ routes.get('/deployment/:id', async (req, res) => {
         let websiteData = await Website.findOne({ stepId: step.id })
         let pingsData = await Ping.find({ websiteId: websiteData._id }).sort({ createdAt: -1 });
         let lastCert = await Certificate.find({ websiteId: websiteData._id }).sort({ createdAt: -1 })[0];
-        console.log(lastCert);
 
         let stepWebsiteData = {
             website: websiteData,

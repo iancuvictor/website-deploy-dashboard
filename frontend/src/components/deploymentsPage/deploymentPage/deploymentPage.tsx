@@ -88,7 +88,7 @@ export default function DeploymentPage() {
                     <div className="w-205 flex flex-row flex-wrap gap-5">
                         <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id}/>
                         <PingTable pingsData={websitesData[viewWebsite].pings} status={true} />
-                        <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} />
+                        <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id}/>
                         <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation} backupData={backupData} />
                     </div>
                 </div>
