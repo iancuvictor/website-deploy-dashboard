@@ -16,11 +16,14 @@ const deployment = new Schema({
     steps: [{
         subPath: { type: String, default: '' },
         command: { type: String, required: true },
-        url: {type: String, required: true, default: null},
+        deploymentUrl: {type: String, required: true, default: null},
+        localUrl: {type: String, required: true, default: null},
         pid: {type: Number, default: null},
         status: {type: String, default: ''},
         dependenciesInstalled: {type: Boolean, default: false}
     }],
+
+    backupLocation: {type: String, required: false, default: null},
 
     lastRunStatus: { type: String, enum: ['success', 'failed', 'running', null], default: null },
     lastRunAt: { type: Date, default: null },

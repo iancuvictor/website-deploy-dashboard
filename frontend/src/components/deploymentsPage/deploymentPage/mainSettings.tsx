@@ -1,14 +1,16 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus, faX } from "@fortawesome/free-solid-svg-icons"
+import { faEye, faPlus, faX } from "@fortawesome/free-solid-svg-icons"
 import { useState, useEffect, useMemo } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import axios from "axios"
 import { toast } from "sonner"
+import { usePopUps } from "../../../contexts/PopUpsContext"
 
 type Step = {
     subPath: string,
     command: string,
-    url: string,
+    deploymentUrl: string,
+    localUrl: string,
     pid: number,
     status: string,
     dependenciesInstalled: boolean
@@ -52,40 +54,38 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
 
     const queryClient = useQueryClient()
 
+    const { requestConfirm } = usePopUps();
 
+    // let currentStatus;
     const updateDeploymentData = useMutation({
         mutationFn: (form: DeploymentData) => axios.put(`${API_URL}/api/deployments/deployment?id=${id}`, form),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['deployment', id] })
             toast.success(`Data successfully updated`)
         }
     })
 
-    let currentStatus;
-
     const deployWebsite = useMutation({
         mutationFn: (id: string) => axios.post(`${API_URL}/api/deployments/deploy?id=${id}`),
-        onSuccess: (response) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['deployment', id] })
             toast.success(`Website successfully deployed`);
-            currentStatus = response.data.status;
         }
     })
 
     const stopDeployment = useMutation({
         mutationFn: (id: string) => axios.post(`${API_URL}/api/deployments/stopDeployment?id=${id}`),
-        onSuccess: (response) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['deployment', id] })
             toast.success(`Website successfully closed`);
-            currentStatus = response.data.status;
         }
     })
 
     const installDependencies = useMutation({
         mutationFn: (id: string) => axios.post(`${API_URL}/api/deployments/installDependencies?id=${id}`),
-        onSuccess: (response) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['deployment', id] })
             toast.success(`Dependencies successfully downloaded`);
-            currentStatus = response.data.status;
         }
     })
 
@@ -102,7 +102,7 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
     return <div>
         <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200">
             <div className="flex flex-col gap-3">
-                <span className="text-[14px] text-neutral-500">Basic information</span>
+                <span className="text-[18px] text-neutral-500">Basic information</span>
                 <div className="flex flex-col gap-3">
 
                     <span>Deployment type: {form.targetType}</span>
@@ -118,16 +118,11 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
                 </div>
             </div>
             <div className="flex flex-col gap-3">
-                <span className="text-[14px] text-neutral-500">Routes and package management</span>
+                <span className="text-[18px] text-neutral-500">Routes and package management</span>
                 <div className="flex flex-col gap-3">
-
-                    <button onClick={() => setForm({ ...form, steps: [...form.steps, { subPath: '', command: '' }] })
-                    }
-                        className="cursor-pointer hover:bg-neutral-900 ring-1 ring-neutral-700 p-2 w-fit">Add sub-route {" "}
-                        <FontAwesomeIcon icon={faPlus} /></button>
                     <div className="flex flex-col gap-3">
                         {form.steps.map((step, i) => {
-                            return <div key={i} className="flex flex-col gap-3">
+                            return <div key={i} className="flex flex-col gap-3 ring-1 ring-neutral-700 p-3 bg-neutral-900">
                                 <div className="flex flex-row items-center justify-center gap-3">
                                     <span>Route</span>
                                     <input type="text"
@@ -155,20 +150,36 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
                                     </button>
                                 </div>
                                 <div className="flex flex-row items-center justify-center gap-3">
-                                <span className="whitespace-nowrap">Deployment URL</span>
+                                    <span className="whitespace-nowrap">Deployment URL</span>
                                     <input type="text"
                                         className={`${formInputStyle} text-blue-400`}
-                                        value={step.url || ''}
+                                        value={step.deploymentUrl || ''}
                                         onChange={(e) => setForm({
                                             ...form, steps: form.steps.map((step, index) => {
-                                                return index === i ? { ...step, url: e.target.value } : step
+                                                return index === i ? { ...step, deploymentUrl: e.target.value } : step
                                             })
                                         })}
                                         placeholder="eg. https://www.yoursite.com/" />
-                                            </div>
+                                </div>
+
+                                <div className="flex flex-row items-center justify-center gap-3">
+                                    <span className="whitespace-nowrap">Local URL</span>
+                                    <input type="text"
+                                        className={`${formInputStyle} text-blue-400`}
+                                        value={step.localUrl || ''}
+                                        onChange={(e) => setForm({
+                                            ...form, steps: form.steps.map((step, index) => {
+                                                return index === i ? { ...step, localUrl: e.target.value } : step
+                                            })
+                                        })}
+                                        placeholder="eg. https://www.yoursite.com/" />
+                                </div>
                             </div>
                         })}
                     </div>
+                    <button onClick={() => setForm({ ...form, steps: [...form.steps, { subPath: '', command: '' }] })}
+                        className="cursor-pointer hover:bg-neutral-900 ring-1 ring-neutral-700 p-2 w-fit">Add sub-route {" "}
+                        <FontAwesomeIcon icon={faPlus} /></button>
                     {areDependenciesInstalled && <span className="text-green-500 text-[14px]">All dependencies have been installed</span>}
                     <button onClick={() => installDependencies.mutate(id)}
                         className={`${formInputStyle} cursor-pointer hover:bg-neutral-900 active:bg-black`}>
@@ -184,7 +195,12 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
 
                     <div className="flex flex-row gap-5">
 
-                        <button onClick={() => stopDeployment.mutate(id)}
+                        <button onClick={() => requestConfirm({
+                            message: 'Are you sure you want to stop the deployment?',
+                            confirmText: 'Yes, close connection',
+                            denyText: 'No',
+                            onConfirm: () => stopDeployment.mutate(id)
+                        })}
                             className="cursor-pointer w-fit bg-rose-500 hover:bg-rose-600 shadow-lg/40 
                     shadow-rose-500 hover:shadow-rose-600 ring-1 ring-neutral-700 p-2 rounded-xs">Stop deployment</button>
                         <button onClick={() => deployWebsite.mutate(id)}
@@ -192,6 +208,9 @@ export default function MainSettings({ data, id }: MainSettingsProps) {
                         shadow-green-500 hover:shadow-green-600 ring-1 ring-neutral-700 p-2 rounded-xs">Deploy website</button>
                     </div>
                 </div>
+                <button className="cursor-pointer text-neutral-500 hover:text-white">
+                    <FontAwesomeIcon icon={faEye} />
+                </button>
             </div>
         </div>
     </div>

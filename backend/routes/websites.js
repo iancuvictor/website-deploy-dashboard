@@ -30,7 +30,7 @@ routes.get('/website', async (req, res) => {
             pings: pingsData,
             certificate: certData
         }
-        
+
         if (data.website !== null) {
             res.status(200).json(data)
         } else {
@@ -74,17 +74,17 @@ routes.put('/', async (req, res) => {
 routes.put('/pinging', async (req, res) => {
     console.log('hit');
     console.log(req.query);
-    try{
-        if(req.query.pingType === 'ping'){
-            await Website.updateOne({_id: req.query.id}, { $set: {pinging: req.body.value}})
-            res.status(200).json({message: `Ping status updated to: ${req.body.value}`});
-        } else if(req.query.pingType === 'certificate'){
-            await Website.updateOne({_id: req.query.id}, { $set: {certPinging: req.body.value}})
-            res.status(200).json({message: `Certificate check status updated to: ${req.body.value}`});
+    try {
+        if (req.query.pingType === 'ping') {
+            await Website.updateOne({ _id: req.query.id }, { $set: { pinging: req.body.value } })
+            res.status(200).json({ message: `Ping status updated to: ${req.body.value}` });
+        } else if (req.query.pingType === 'certificate') {
+            await Website.updateOne({ _id: req.query.id }, { $set: { certPinging: req.body.value } })
+            res.status(200).json({ message: `Certificate check status updated to: ${req.body.value}` });
         }
-    } catch(err) {
+    } catch (err) {
         console.log(err);
-        res.status(500).json({message: 'An error has occured'});
+        res.status(500).json({ message: 'An error has occured' });
     }
 })
 
