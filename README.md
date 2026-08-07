@@ -1,14 +1,22 @@
 # [WIP] Website deployment program built in:
 ### React.JS, TypeScript, Node.JS, Mongo.DB, Tailwind CSS
 
+### Creating deployments
+In order to create a deployment you have to specify:
+- the location of the deployment (local or from a remote server, in which case the connection will be established through SSH) 
+- a name and a root folder path.
+
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/333b8985-872a-4c8c-b850-78ed08f33677" />
 
 ### Deployment page
-The deployment (singular) page contains everything necessary to manage your deployment. 
-After you've created the deployment, you will be redirected to the deployment's page.
+The deployment page contains everything necessary to manage your deployment. 
 The first window contains the data required for the actual deployment.
 #### Note: If your website does not require sub-routes, you can skip them entirely.
 Now for a quick explanation of the deployment page, we start off with the first screen:
--  Sub-routes can be used to navigate individually to dedicated folders such as /frontend or /backend, where, a process will run the commands you enter in the command field (the command you use to boot up your servers and VITE project).
--  After you hit save, the **install dependencies** button will appear, thus allowing you to run the process once, installing everything that is required. (make sure there is a package.json file in the directories you provide).
+-  Sub-routes can be used to navigate individually to specified folders, where a process will run the commands you enter in the command field (the command you use to boot up your servers and your projects).
+-  After filling in every input and hitting save, you will be able to deploy the project.
+-  The child process id (pid) will be displayed, as well as the status of the deployment.
 
-<img width="849" height="650" alt="image" src="https://github.com/user-attachments/assets/96b4ae8d-5f1b-4062-8af7-861f4321d263" />
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/21d64558-b5aa-4f7b-85f4-efdb2deae45e" />
+
+
