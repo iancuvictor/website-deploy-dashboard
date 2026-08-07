@@ -5,6 +5,7 @@ import Backup from "../schemas/backup.js";
 import Website from "../schemas/website.js";
 import Ping from "../schemas/ping.js";
 import Certificate from "../schemas/certificate.js";
+import path from 'path';
 
 const routes = express.Router();
 
@@ -20,7 +21,7 @@ routes.get('/deployment/:id', async (req, res) => {
     data.websites = [];
     for (let step of data.deployment.steps) {
         let websiteData = await Website.findOne({ stepId: step.id })
-        if(!websiteData){
+        if (!websiteData) {
             break;
         }
         let pingsData = await Ping.find({ websiteId: websiteData._id }).sort({ createdAt: -1 });
@@ -43,8 +44,8 @@ routes.get('/deployment/:id', async (req, res) => {
 
 routes.put('/deployment', async (req, res) => {
     try {
-        const deployment = await Deployment.findOneAndUpdate({ _id: req.query.id }, { $set: req.body }, {new: true})
-        
+        const deployment = await Deployment.findOneAndUpdate({ _id: req.query.id }, { $set: req.body }, { new: true })
+
         for (let step of deployment.steps) {
             if (step.websiteId === null) {
                 let newWebsite = await Website.create({
@@ -85,6 +86,7 @@ routes.post('/newDeployment', async (req, res) => {
     req.body.targetType === 'local' ?
         data.localPath = req.body.path
         : data.remotePath = req.body.path
+    data.logsPath = path.join(req.body.path, 'logs')
 
     try {
         let deployment = await Deployment.create(data)
@@ -111,7 +113,7 @@ routes.post('/deploy', async (req, res) => {
                 throw new Error(`Temp step failed with code ${data.temp.exitCode}`)
             }
 
-            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id );
+            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id);
 
             if (data.perm.status === 'crashed') {
                 return res.status(500).json({ message: 'Deployment failed' })
@@ -203,19 +205,19 @@ routes.post('/deployment/:id/backup', async (req, res) => {
 })
 
 routes.delete('/deployment', async (req, res) => {
-    try{
-        await Backup.deleteMany({deploymentId: req.query.id});
-        
-        let websites = await Website.find({deploymentId: req.query.id})
-        for(let website of websites){
-            await Ping.deleteMany({websiteId: website._id})
-            await Certificate.deleteMany({websiteId: website._id});
+    try {
+        await Backup.deleteMany({ deploymentId: req.query.id });
+
+        let websites = await Website.find({ deploymentId: req.query.id })
+        for (let website of websites) {
+            await Ping.deleteMany({ websiteId: website._id })
+            await Certificate.deleteMany({ websiteId: website._id });
         }
-        await Website.deleteMany({deploymentId: req.query.id});
-        await Deployment.deleteOne({_id: req.query.id});
-        res.status(200).json({message: 'Deployment deleted'});
-    } catch(err) {
-        res.status(500).json({message: 'An error has occured'});
+        await Website.deleteMany({ deploymentId: req.query.id });
+        await Deployment.deleteOne({ _id: req.query.id });
+        res.status(200).json({ message: 'Deployment deleted' });
+    } catch (err) {
+        res.status(500).json({ message: 'An error has occured' });
     }
 })
 

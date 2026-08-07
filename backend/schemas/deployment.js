@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose';
 const deployment = new Schema({
     name: { type: String, required: true },
     targetType: { type: String, enum: ['local', 'remote'], required: true },
-    deploymentUrl: { type: String, default: null },
+    logsPath: { type: String, default: null },
 
     localPath: { type: String, default: null }, 
 

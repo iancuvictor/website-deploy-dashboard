@@ -85,17 +85,17 @@ export default function DeploymentPage() {
                     <h1 className="text-[30px] font-[700]">Viewing: {deploymentData.name}</h1>
                 </div>
                 <div className="w-full flex flex-col items-start gap-5">
-                <div className="flex flex-row gap-5">
-                    <MainSettings data={deploymentData} id={id} viewWebsite={viewWebsite} setViewWebsite={setViewWebsite} />
-                    {websitesData && websitesData.length > 0 && <div className="w-205 flex flex-row flex-wrap gap-5">
-                        <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id} />
-                        <PingTable pingsData={websitesData[viewWebsite].pings} status={true} />
-                        <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id} />
-                        <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation} backupData={backupData} />
-                    </div>}
-                </div>
-                    <Logs stepId={deploymentData?.steps[viewWebsite]?._id}/>
+                    <div className="flex flex-row gap-5">
+                        <MainSettings data={deploymentData} id={id} viewWebsite={viewWebsite} setViewWebsite={setViewWebsite} />
+                        {websitesData && websitesData.length > 0 && <div className="w-205 flex flex-row flex-wrap gap-5">
+                            <Logs stepId={deploymentData?.steps[viewWebsite]?._id} logsPath={deploymentData?.logsPath} />
+                            <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id} />
+                            <PingTable pingsData={websitesData[viewWebsite].pings} status={true} />
+                            <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id} />
+                            <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation || ''} backupData={backupData} />
+                        </div>}
                     </div>
+                </div>
                 <button onClick={() => requestConfirm({
                     message: `Are you SURE you want to delete this deployment? All the data that's been recorded with it will be PERMANENTLY deleted! This acction cannot be undone!`,
                     confirmText: `Yes, permanently delete deployment`,

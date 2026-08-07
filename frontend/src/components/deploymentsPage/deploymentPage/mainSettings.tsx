@@ -76,7 +76,7 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
         mutationFn: (id: string) => axios.post(`${API_URL}/api/deployments/deploy?id=${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['deployment', id] })
-            setUiEffects({...uiEffects, deploying: false})
+            setUiEffects({ ...uiEffects, deploying: false })
             toast.success(`Website successfully deployed`);
         }
     })
@@ -211,17 +211,17 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                             </div>
                         })}
                     </div>
-                    {areDependenciesInstalled && <span className="text-green-500 text-[14px]">All dependencies have been installed</span>}
+                    {/* {areDependenciesInstalled && <span className="text-green-500 text-[14px]">All dependencies have been installed</span>}
                     <button onClick={() => installDependencies.mutate(id)}
                         className={`${formInputStyle} cursor-pointer hover:bg-neutral-900 active:bg-black`}>
-                        Install all dependencies</button>
+                        Install all dependencies</button> */}
                 </div>
                 <div className="w-full flex flex-row justify-between">
                     <button disabled={!saveButtonActive} onClick={() => {
                         updateDeploymentData.mutate(form)
                     }}
-                        className={`${saveButtonActive ? 'cursor-pointer bg-green-500 shadow-md/40 shadow-green-500 hover:bg-green-600' 
-                        : 'ring-1 ring-neutral-700 text-neutral-700'} 
+                        className={`${saveButtonActive ? 'cursor-pointer bg-green-500 shadow-md/40 shadow-green-500 hover:bg-green-600'
+                            : 'ring-1 ring-neutral-700 text-neutral-700'} 
                         p-2 w-fit duration-75 ease-out`}>Save changes</button>
 
                     <div className="flex flex-row gap-5">

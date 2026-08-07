@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePopUps } from "../../../contexts/PopUpsContext.js";
 import { toast } from "sonner";
@@ -59,7 +59,7 @@ export default function PingsData({ data, websiteData, deploymentId }: PingsData
         mutationFn: (websiteId: string) => axios.delete(`${API_URL}/api/websites/pings?id=${websiteId}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] });
-            if(deploymentId !== undefined){
+            if (deploymentId !== undefined) {
                 queryClient.invalidateQueries({ queryKey: ['deployment', deploymentId] });
             }
             toast.success(`All pings have successfuly been deleted`);
@@ -122,6 +122,10 @@ export default function PingsData({ data, websiteData, deploymentId }: PingsData
         return 'text-rose-500';
     }
 
+    useEffect(() => {
+        setForm(defaultData);
+    }, [websiteData])
+
     return <div className="flex flex-col justify-between ring-1 ring-neutral-700 p-5 rounded-xs w-100 h-100">
         <div className="flex flex-col gap-1">
 
@@ -149,15 +153,16 @@ export default function PingsData({ data, websiteData, deploymentId }: PingsData
                 </span>
                 {JSON.stringify(defaultData) !== JSON.stringify(form) &&
                     <button onClick={() => {
-                        if(form.pingFrequency < 1 ){
+                        if (form.pingFrequency < 1) {
                             toast.error(`Ping frequency cannot be smaller than 1`)
                             return;
                         }
                         updateWebsite.mutate(form, {
-                        onSuccess: () => {
-                            queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
-                        }
-                    })}}
+                            onSuccess: () => {
+                                queryClient.invalidateQueries({ queryKey: ['website', websiteData._id] })
+                            }
+                        })
+                    }}
                         className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out">
                         <FontAwesomeIcon icon={faFloppyDisk} /></button>}
             </div>

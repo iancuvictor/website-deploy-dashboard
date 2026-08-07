@@ -52,10 +52,10 @@ export default function NewDeployment() {
                     <span>Project name:</span>
                     <input type="text" onChange={(e) => setForm({...form, name: e.target.value})} className={inputStyle} />
                 </div>
-                <div className="flex flex-col gap-1">
+                {/* <div className="flex flex-col gap-1">
                     <span>Deployment URL:</span>
                     <input type="text" onChange={(e) => setForm({...form, deploymentUrl: e.target.value})} className={inputStyle} />
-                </div>
+                </div> */}
                 <div className="flex flex-col gap-1">
                     <span>Folder path:</span>
                     <input type="text" onChange={(e) => setForm({...form, path: e.target.value})} className={inputStyle} />

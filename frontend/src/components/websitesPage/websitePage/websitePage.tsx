@@ -97,7 +97,7 @@ export default function WebsitePage() {
                     </div>
                 </div>
                 <div className="flex flex-row w-320 ring-1 ring-neutral-700 p-5">
-                    <Chart data={pingsData} />
+                    <Chart data={[...pingsData].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())} />
                 </div>
             </div>
         }
