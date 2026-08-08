@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import { io } from '../server.js';
+import Log from '../schemas/log.js';
 
 
 export async function runStepTemp(rootPath, subPath) {
@@ -24,8 +25,17 @@ export async function runStepTemp(rootPath, subPath) {
   });
 }
 
-export async function runStepPerm(rootPath, subPath, command, stepId) {
+
+
+
+export async function runStepPerm(rootPath, subPath, command, stepId, logsPath) {
   const joinedPath = path.join(rootPath, subPath);
+  
+  const timestamp = Date.now();
+  const logFile = path.join(logsPath, `Step_${stepId}_Timestamp_${timestamp}.txt`)
+  if (!fs.existsSync(logFile)) {
+    fs.writeFileSync(logFile, '');
+  }
 
   let doesEnvExist = fs.existsSync(path.join(joinedPath, '.env'));
   let parsed = {};
@@ -46,15 +56,35 @@ export async function runStepPerm(rootPath, subPath, command, stepId) {
   child.unref();
 
   let logs = '';
-  child.stdout?.on('data', (data) => {
+
+  const count = await Log.countDocuments({ stepId });
+  child.stdout?.on('data', async (data) => {
     const chunk = data.toString();
     logs += chunk;
     io.emit('deployLog', { stepId, chunk });
+    fs.appendFileSync(logFile, chunk);
+    if (count >= 100) {
+      const oldest = await Log.find({ stepId }).sort({ timestamp: 1 }).limit(count - 99);
+      await Log.deleteMany({ _id: { $in: oldest.map(d => d._id) } });
+    }
+    await Log.create({
+      stepId: stepId,
+      message: chunk
+    })
   });
-  child.stderr?.on('data', (data) => {
+  child.stderr?.on('data', async (data) => {
     const chunk = data.toString();
     logs += chunk;
     io.emit('deployLog', { stepId, chunk });
+    fs.appendFileSync(logFile, chunk);
+    if (count >= 100) {
+      const oldest = await Log.find({ stepId }).sort({ timestamp: 1 }).limit(count - 99);
+      await Log.deleteMany({ _id: { $in: oldest.map(d => d._id) } });
+    }
+    await Log.create({
+      stepId: stepId,
+      message: chunk
+    })
   });
 
   return new Promise((resolve) => {

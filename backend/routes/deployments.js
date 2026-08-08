@@ -6,6 +6,9 @@ import Website from "../schemas/website.js";
 import Ping from "../schemas/ping.js";
 import Certificate from "../schemas/certificate.js";
 import path from 'path';
+import Log from "../schemas/log.js";
+import { spawn } from 'child_process';
+import fs from 'fs';
 
 const routes = express.Router();
 
@@ -40,6 +43,11 @@ routes.get('/deployment/:id', async (req, res) => {
     }
 
     res.status(200).json(data);
+})
+
+routes.get('/logs/:id', async (req, res) => {
+    let logs = await Log.find({ stepId: req.params.id })
+    res.status(200).json(logs);
 })
 
 routes.put('/deployment', async (req, res) => {
@@ -113,7 +121,7 @@ routes.post('/deploy', async (req, res) => {
                 throw new Error(`Temp step failed with code ${data.temp.exitCode}`)
             }
 
-            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id);
+            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id, deployment.logsPath);
 
             if (data.perm.status === 'crashed') {
                 return res.status(500).json({ message: 'Deployment failed' })
@@ -203,6 +211,22 @@ routes.post('/deployment/:id/backup', async (req, res) => {
         res.status(500).json({ message: 'An error has occured' })
     }
 })
+
+routes.post('/openFolder', async (req, res) => {
+    try {
+        if (fs.existsSync(req.body.path)) {
+            spawn('nemo', [req.body.path]);
+            res.status(200).json({ message: 'folder opened' });
+        } else {
+            fs.mkdirSync(req.body.path, { recursive: true })
+            spawn('nemo', [req.body.path]);
+            res.status(200).json({ message: 'folder opened' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'An error has occurred' });
+        console.log(err);
+    }
+});
 
 routes.delete('/deployment', async (req, res) => {
     try {
