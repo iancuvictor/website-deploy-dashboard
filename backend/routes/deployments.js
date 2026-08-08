@@ -226,7 +226,7 @@ routes.post('/openFolder', async (req, res) => {
         res.status(500).json({ message: 'An error has occurred' });
         console.log(err);
     }
-});
+})
 
 routes.delete('/deployment', async (req, res) => {
     try {

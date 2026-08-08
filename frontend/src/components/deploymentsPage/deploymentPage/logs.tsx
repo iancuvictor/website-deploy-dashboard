@@ -1,4 +1,4 @@
-import { faCircleNotch, faFileArrowDown, faFloppyDisk, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown, faCaretUp, faCircleNotch, faFileArrowDown, faFloppyDisk, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -19,6 +19,7 @@ export default function Logs({ stepId, logsPath }: LogProps) {
 
     // const [logs, setLogs] = useState([]);
     const [form, setForm] = useState(logsPath);
+    const [view, setView] = useState(false);
     const formInputStyle = `px-3 py-2.5 ring-1 ring-neutral-700 rounded-xs text-[14px] w-full no-underline`;
     const queryClient = useQueryClient()
 
@@ -64,21 +65,25 @@ export default function Logs({ stepId, logsPath }: LogProps) {
                 <FontAwesomeIcon icon={faCircleNotch} spin />
             </div>
         } else {
-            return <div className="flex flex-col gap-3 w-205 h-100 ring-1 ring-neutral-700 p-5">
+            return <div className={`${view ? 'h-100' : 'h-20'} flex flex-col gap-3 w-205 ring-1 ring-neutral-700 p-5 duration-150 ease-out`}>
                 <div className="w-full flex items-center gap-5">
                     <span className="whitespace-nowrap">Deployment logs</span>
                     <div className="w-full flex flex-row gap-2">
                         <input type="text" className={formInputStyle} placeholder=":/enter logs folder"
                             value={form} onChange={(e) => setForm(e.target.value)} />
-                        <button onClick={() => updateLogsPath.mutate(form)}
+                        {logsPath !== form && <button onClick={() => updateLogsPath.mutate(form)}
                             className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out w-fit">
-                            <FontAwesomeIcon icon={faFloppyDisk} /></button>
+                            <FontAwesomeIcon icon={faFloppyDisk} /></button>}
                         <button onClick={() => openLogsFolder.mutate(logsPath)}
                         className="cursor-pointer ring-1 ring-neutral-700 p-2 hover:bg-neutral-900 whitespace-nowrap">
-                            <FontAwesomeIcon icon={faFolderOpen} /> Open logs folder</button>
+                            <FontAwesomeIcon icon={faFolderOpen} /> Open logs</button>
+                        <button onClick={() => setView(!view)} className="cursor-pointer p-2 ring-1 ring-neutral-700 hover:bg-neutral-900">
+                            <FontAwesomeIcon icon={view ? faCaretDown : faCaretUp}/></button>
                     </div>
                 </div>
-                <div className="p-2 ring-1 ring-neutral-700 h-full whitespace-pre-wrap overflow-y-scroll">
+                <div className={`${view ? 'h-full p-2 ring-1 ring-neutral-700 overflow-y-scroll opacity-100' 
+                : 'p-2 h-0 overflow-hidden opacity-0'} 
+                duration-150 ease-out whitespace-pre-wrap`}>
                     {logs.map((log, i) => {
                         return <p key={i}>{log.message}</p>
                     })}

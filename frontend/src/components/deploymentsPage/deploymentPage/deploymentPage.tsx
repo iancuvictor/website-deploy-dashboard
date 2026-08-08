@@ -85,7 +85,7 @@ export default function DeploymentPage() {
                     <h1 className="text-[30px] font-[700]">Viewing: {deploymentData.name}</h1>
                 </div>
                 <div className="w-full flex flex-col items-start gap-5">
-                    <div className="flex flex-row gap-5">
+                    <div className="w-full flex flex-row justify-center gap-5">
                         <MainSettings data={deploymentData} id={id} viewWebsite={viewWebsite} setViewWebsite={setViewWebsite} />
                         {websitesData && websitesData.length > 0 && <div className="w-205 flex flex-row flex-wrap gap-5">
                             <Logs stepId={deploymentData?.steps[viewWebsite]?._id} logsPath={deploymentData?.logsPath} />

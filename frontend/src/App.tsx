@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import './App.css';
-import { MainDashboard, Navbar, DeploymentsPage, DeploymentPage, NewDeployment, WebsitesPage, WebsitePage } from './components/index.js';
+import { MainDashboard, Navbar, Config, DeploymentsPage, DeploymentPage, NewDeployment, WebsitesPage, WebsitePage } from './components/index.js';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { GlobalStatesContext } from './contexts/GlobalStatesContext.js';
 import { Toaster } from 'sonner';
@@ -18,6 +18,7 @@ function App() {
         <div className='relative min-h-[calc(100vh-5rem)]'>
           <Routes>
             <Route path='/' element={<MainDashboard />} />
+            <Route path='/config' element={<Config />} />
             <Route path='/deployments' element={<DeploymentsPage />} />
             <Route path='/deployments/:id' element={<DeploymentPage />} />
             <Route path='/newDeployment' element={<NewDeployment />} />

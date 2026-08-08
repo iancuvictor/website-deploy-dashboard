@@ -30,9 +30,9 @@ export async function runStepTemp(rootPath, subPath) {
 
 export async function runStepPerm(rootPath, subPath, command, stepId, logsPath) {
   const joinedPath = path.join(rootPath, subPath);
-  
-  const timestamp = Date.now();
-  const logFile = path.join(logsPath, `Step_${stepId}_Timestamp_${timestamp}.txt`)
+
+  const timestamp = new Date(Date.now()).toISOString();
+  const logFile = path.join(logsPath, `Step_${stepId}_Timestamp_${timestamp}.txt`);
   if (!fs.existsSync(logFile)) {
     fs.writeFileSync(logFile, '');
   }
@@ -56,36 +56,24 @@ export async function runStepPerm(rootPath, subPath, command, stepId, logsPath) 
   child.unref();
 
   let logs = '';
-
   const count = await Log.countDocuments({ stepId });
-  child.stdout?.on('data', async (data) => {
+
+  const handleData = async (data) => {
     const chunk = data.toString();
     logs += chunk;
     io.emit('deployLog', { stepId, chunk });
     fs.appendFileSync(logFile, chunk);
+
     if (count >= 100) {
       const oldest = await Log.find({ stepId }).sort({ timestamp: 1 }).limit(count - 99);
       await Log.deleteMany({ _id: { $in: oldest.map(d => d._id) } });
     }
-    await Log.create({
-      stepId: stepId,
-      message: chunk
-    })
-  });
-  child.stderr?.on('data', async (data) => {
-    const chunk = data.toString();
-    logs += chunk;
-    io.emit('deployLog', { stepId, chunk });
-    fs.appendFileSync(logFile, chunk);
-    if (count >= 100) {
-      const oldest = await Log.find({ stepId }).sort({ timestamp: 1 }).limit(count - 99);
-      await Log.deleteMany({ _id: { $in: oldest.map(d => d._id) } });
-    }
-    await Log.create({
-      stepId: stepId,
-      message: chunk
-    })
-  });
+
+    await Log.create({ stepId, message: chunk });
+  };
+
+  child.stdout?.on('data', handleData);
+  child.stderr?.on('data', handleData);
 
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
@@ -108,7 +96,6 @@ export async function runStepPerm(rootPath, subPath, command, stepId, logsPath) 
     });
   });
 }
-
 export async function createLocalBackup() {
 
 }

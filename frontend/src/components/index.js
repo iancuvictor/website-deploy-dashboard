@@ -7,6 +7,7 @@ export {default as WebsitePage} from './websitesPage/websitePage/websitePage'; /
 export {default as DeploymentPage} from './deploymentsPage/deploymentPage/deploymentPage'; // DEPLOYMENT! page
 export {default as Navbar} from './navbar/navbar';
 export {default as PingCard} from './pingCard/pingCard';
+export {default as Config} from './config/config.tsx';
 
 export {default as Confirm} from '../components/popUps/confirm';
 export {default as ErrorPage} from '../components/errorPages/errorPage';
