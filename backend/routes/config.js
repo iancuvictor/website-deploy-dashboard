@@ -123,6 +123,7 @@ routes.get('/cloudflareConfig', async (req, res) => {
     try {
         const config = await CloudflareConfig.findOne();
         res.status(200).json(config);
+        console.log(config);
     } catch (err) {
         res.status(500).json({ message: 'An error has occurred' });
     }

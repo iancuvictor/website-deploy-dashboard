@@ -3,7 +3,8 @@ import { GlobalStatesContext } from "../../contexts/GlobalStatesContext"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleNotch, faDownload, faGear } from "@fortawesome/free-solid-svg-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import {type AxiosResponse, AxiosError} from "axios";
+import axios from 'axios';
 import ErrorPage from "../errorPages/errorPage";
 import { toast } from "sonner";
 import CloudflareForm from "./cloudflareForm";
@@ -22,15 +23,13 @@ export default function Config() {
 
     const queryClient = useQueryClient()
 
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error } = useQuery<AxiosResponse, AxiosError<{ message: string }>>({
         queryFn: () => axios.get(`${API_URL}/api/config/status`),
         queryKey: ['config']
     })
 
 
     const configData = data?.data
-
-    console.log(configData);
 
     const installNginx = useMutation({
         mutationFn: () => axios.post(`${API_URL}/api/config/installNginx`),

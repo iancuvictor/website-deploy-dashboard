@@ -48,7 +48,7 @@ export default function WebsitesPage() {
                     className={`${darkMode ? 'hover:bg-neutral-900' : 'hover:bg-gray-200'} 
                     cursor-pointer rounded-xs p-2 ring-1 ring-neutral-700`}>Add website</button>
             </div>
-            <div className="flex flex-wrap items-center gap-10">
+            <div className="w-fit flex flex-wrap items-center gap-10">
                 {!isLoading && data.data.length !== 0 ? data.data.map((website) => {
                     return <WebsiteCard websiteData={website} key={website._id} />
                 }) : <div className="text-white bg-neutral-950 ring-1 ring-neutral-700 p-10">
