@@ -1,19 +1,8 @@
 import express from 'express';
-import { spawn } from 'child_process';
+import CloudflareConfig from '../schemas/configCloudflare.js';
+import {runCheck} from '../utils/runCheck.js';
 
 const routes = express.Router();
-
-function runCheck(command, args) {
-  return new Promise((resolve) => {
-    const child = spawn(command, args);
-    let output = '';
-
-    child.stdout.on('data', (c) => output += c.toString());
-    child.stderr.on('data', (c) => output += c.toString());
-    child.on('close', (code) => resolve({ success: code === 0, output }));
-    child.on('error', () => resolve({ success: false, output: '' }));
-  });
-}
 
 routes.get('/status', async (req, res) => {
   try {
@@ -22,7 +11,7 @@ routes.get('/status', async (req, res) => {
       runCheck('systemctl', ['is-active', 'nginx']),
       runCheck('which', ['certbot']),
       runCheck('which', ['ufw']),
-      runCheck('pkexec', ['ufw', 'status']),
+      runCheck('ufw', ['status']),
     ]);
 
     // const config = await HostConfig.findOne();
@@ -113,6 +102,30 @@ routes.post('/activateUfw', async (req, res) => {
     res.status(500).json({ message: 'An error has occurred' });
     console.log(error);
   }
+});
+
+// CLOUDFLARE
+
+routes.post('/cloudflareConfig', async (req, res) => {
+    try {
+        const config = await CloudflareConfig.findOneAndUpdate(
+            {},
+            { $set: req.body },
+            { upsert: true, new: true }
+        );
+        res.status(200).json({ message: 'Config saved', config });
+    } catch (err) {
+        res.status(500).json({ message: 'An error has occurred' });
+    }
+});
+
+routes.get('/cloudflareConfig', async (req, res) => {
+    try {
+        const config = await CloudflareConfig.findOne();
+        res.status(200).json(config);
+    } catch (err) {
+        res.status(500).json({ message: 'An error has occurred' });
+    }
 });
 
 

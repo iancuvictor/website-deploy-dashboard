@@ -120,11 +120,6 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                         <span className="whitespace-nowrap">Root path:</span>
                         <input type="text" value={path} onChange={(e) => setForm({ ...form, [formPath]: e.target.value })} className={formInputStyle} />
                     </div>
-                    {/* <div className="flex flex-row gap-2 items-center">
-                        <span className="whitespace-nowrap">Deployment URL:</span>
-                        <input type='text' value={form.deploymentUrl} onChange={(e) => setForm({ ...form, deploymentUrl: e.target.value })}
-                            className={`${formInputStyle} text-blue-400`} />
-                    </div> */}
                 </div>
             </div>
             <div className="flex flex-col gap-3">
@@ -211,10 +206,6 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                             </div>
                         })}
                     </div>
-                    {/* {areDependenciesInstalled && <span className="text-green-500 text-[14px]">All dependencies have been installed</span>}
-                    <button onClick={() => installDependencies.mutate(id)}
-                        className={`${formInputStyle} cursor-pointer hover:bg-neutral-900 active:bg-black`}>
-                        Install all dependencies</button> */}
                 </div>
                 <div className="w-full flex flex-row justify-between">
                     <button disabled={!saveButtonActive} onClick={() => {
@@ -223,8 +214,8 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                         className={`${saveButtonActive ? 'cursor-pointer bg-green-500 shadow-md/40 shadow-green-500 hover:bg-green-600'
                             : 'ring-1 ring-neutral-700 text-neutral-700'} 
                         p-2 w-fit duration-75 ease-out`}>Save changes</button>
-
                     <div className="flex flex-row gap-5">
+                        <button className="cursor-pointer p-2 ring-1 ring-neutral-700 hover:bg-neutral-900">Expose to URL</button>
                         {stopDeploymentButton ? <button onClick={() => requestConfirm({
                             message: 'Are you sure you want to stop the deployment?',
                             confirmText: 'Yes, close connection',

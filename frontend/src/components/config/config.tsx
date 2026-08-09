@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import ErrorPage from "../errorPages/errorPage";
 import { toast } from "sonner";
+import CloudflareForm from "./cloudflareForm";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -18,8 +19,6 @@ export default function Config() {
         installUfw: false,
         activateUfw: false
     })
-
-    const formInputStyle = `px-3 py-2.5 ring-1 ring-neutral-700 rounded-xs text-[14px] w-full no-underline`;
 
     const queryClient = useQueryClient()
 
@@ -183,27 +182,15 @@ export default function Config() {
                         </div>
                     </div>
                     <div className="flex flex-col gap-2 p-5 ring-1 ring-neutral-700 rounded-md">
-                        <span className="text-neutral-500">Provider settings settings:</span>
+                        <span className="text-neutral-500">Provider settings:</span>
                         <div className="flex flex-row gap-1">
                             <span>Provider:</span>
                             <select name="" id="">
                                 <option value="cloudflare">Cloudflare</option>
                             </select>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <span>Api Token</span>
-                            <input type="text" className={formInputStyle} />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <span>Base domain</span>
-                            <input type="text" className={formInputStyle} />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <span>Zone domain</span>
-                            <input type="text" className={formInputStyle} />
-                        </div>
+                        <CloudflareForm/>
                     </div>
-                    <button className="cursor-pointer ring-1 ring-neutral-700 p-2 w-fit hover:bg-green-500 duration-75 ease-out">Save config</button>
                 </div>
             </div>
         }

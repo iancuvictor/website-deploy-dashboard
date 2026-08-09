@@ -9,6 +9,7 @@ import path from 'path';
 import Log from "../schemas/log.js";
 import { spawn } from 'child_process';
 import fs from 'fs';
+import CloudflareConfig from "../schemas/configCloudflare.js";
 
 const routes = express.Router();
 
@@ -138,6 +139,28 @@ routes.post('/deploy', async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'Deployment failed', error: err })
+    }
+});
+
+routes.post('/exposeDeployment', async (req, res) => {
+    let deployment = await Deployment.findOne({ _id: req.query.id });
+    let config = await CloudflareConfig.findOne();
+
+    if (!config) {
+        return res.status(400).json({ message: 'Cloudflare config not set up' });
+    }
+
+    try {
+        for (let step of deployment.steps) {
+            const subdomain = step.deploymentUrl.replace(/^https?:\/\//, '');
+            await upsertDnsRecord(subdomain, config);
+            // next: nginx server block + certbot, once those exist
+        }
+
+        res.status(200).json({ message: 'Deployment exposed successfully' });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Failed to expose deployment' });
     }
 });
 
