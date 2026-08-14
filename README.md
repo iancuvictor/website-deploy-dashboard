@@ -1,6 +1,8 @@
 # [WIP] Website deployment program built in:
 ### React.JS, TypeScript, Node.JS, Mongo.DB, Tailwind CSS
 
+#### !!! Project halted because of lack of hardware (planning to buy a computer to use it as a remote server)
+
 ### Creating deployments
 In order to create a deployment you have to specify:
 - the location of the deployment (local or from a remote server, in which case the connection will be established through SSH) 
