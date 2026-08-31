@@ -4,7 +4,8 @@ import { usePopUps } from "../../../contexts/PopUpsContext";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown, faCaretUp, faCircle, faFloppyDisk, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import BackupCard from "./backupCard";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -31,6 +32,7 @@ export default function Backups({ id, path, backupLocation, backupData }: Backup
 
     const { requestConfirm } = usePopUps();
     const queryClient = useQueryClient()
+    const [view, setView] = useState(false);
 
     const formInputStyle = `px-3 py-2.5 ring-1 ring-neutral-700 rounded-xs text-[14px] w-full no-underline`;
 
@@ -46,6 +48,13 @@ export default function Backups({ id, path, backupLocation, backupData }: Backup
         }
     })
 
+    const openBackupsFolder = useMutation({
+        mutationFn: (path: string) => axios.post(`${API_URL}/api/deployments/openFolder`, { path }),
+        onError: () => {
+            toast.error(`Cannot find logs folder`)
+        }
+    })
+
     const updateBackupData = useMutation({
         mutationFn: ({ id, form }: { id: string, form: Form }) => axios.put(`${API_URL}/api/deployments/deployment/${id}/backup`, form),
         onSuccess: () => {
@@ -54,26 +63,41 @@ export default function Backups({ id, path, backupLocation, backupData }: Backup
         }
     })
 
-    return <div className="ring-1 ring-neutral-700 p-5 w-100 h-100 flex flex-col gap-1">
-        <span className="text-[16px]">Backups [from root folder]</span>
-        <div className="flex flex-col gap-1">
-            {!form.backupLocation && <span className='text-rose-500 text-[14px]'>Please enter a backup path</span>}
-            <div className="flex flex-row gap-2">
-                <input type="text" className={formInputStyle}
-                    value={form.backupLocation}
-                    onChange={(e) => setForm({ ...form, backupLocation: e.target.value })}
-                    placeholder="Backups location path has not been specified" />
-                {backupLocation !== form.backupLocation && <button onClick={() => updateBackupData.mutate({ id, form })}
-                    className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out w-fit">
-                    <FontAwesomeIcon icon={faFloppyDisk} /></button>}
+    return <div className={`${view ? 'h-100' : 'h-40'} ring-1 ring-neutral-700 p-5 w-full flex flex-col gap-3 duration-150`}>
+        <div className="flex flex-row items-center justify-between gap-2">
+            <span className="text-[16px] whitespace-nowrap">Backups [from root folder]</span>
+            <div className="flex flex-row items-center gap-2 w-full">
+                <div className="flex flex-col gap-1 w-full">
+                    {/* {!form.backupLocation && <span className='text-rose-500 text-[14px]'>Please enter a backup path</span>} */}
+                    <div className="flex flex-row gap-2">
+                        <input type="text" className={formInputStyle}
+                            value={form.backupLocation}
+                            onChange={(e) => setForm({ ...form, backupLocation: e.target.value })}
+                            placeholder="Backups location path has not been specified" />
+                        {backupLocation !== form.backupLocation && <button onClick={() => {
+                            if (form.backupLocation === '') {
+                                setForm({ ...form, backupLocation: backupLocation })
+                                toast.error(`Backup path cannot be empty`)
+                            } else {
+                                updateBackupData.mutate({ id, form })
+                            }
+                        }}
+                            className="cursor-pointer text-white ring-1 ring-neutral-700 p-2 hover:bg-green-500 duration-75 ease-out w-fit">
+                            <FontAwesomeIcon icon={faFloppyDisk} /></button>}
+                    </div>
+                </div>
+                <button onClick={() => openBackupsFolder.mutate(backupLocation)}
+                    className="cursor-pointer ring-1 ring-neutral-700 p-2 hover:bg-neutral-900 whitespace-nowrap">
+                    <FontAwesomeIcon icon={faFolderOpen} /> Open location</button>
+                <button onClick={() => setView(!view)} className="cursor-pointer p-2 ring-1 ring-neutral-700 hover:bg-neutral-900">
+                    <FontAwesomeIcon icon={view ? faCaretDown : faCaretUp} /></button>
             </div>
         </div>
-        <div className="flex flex-col w-full h-full ring-1 ring-neutral-700 overflow-y-scroll">
+        <div className={`${view ? 'h-full p-2 ring-1 ring-neutral-700 overflow-y-scroll opacity-100'
+            : 'p-0 h-0 overflow-hidden opacity-0'} 
+                duration-150 ease-out whitespace-pre-wrap`}>
             {backupData.length > 0 ? backupData.map((backup) => {
-                return <div key={backup._id} className="w-full flex flex-row justify-between p-3">
-                    <span>{backup.createdAt}</span>
-                    <FontAwesomeIcon icon={faCircle} className={backup.active ? 'text-green-500' : 'text-neutral-700'} />
-                </div>
+                return <BackupCard data={backup} key={backup._id} />
             }) : <span className="w-full text-center p-3">No backups have been created yet</span>}
         </div>
         <button onClick={() => requestConfirm({

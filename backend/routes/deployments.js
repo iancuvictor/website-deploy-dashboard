@@ -109,7 +109,9 @@ routes.post('/newDeployment', async (req, res) => {
 
 routes.post('/deploy', async (req, res) => {
     let deployment = await Deployment.findOne({ _id: req.query.id })
-    let basePath = deployment.targetType === 'local' ? deployment.localPath : deployment.remotePath
+    let basePath = deployment.targetType === 'local' ? deployment.localPath : deployment.remotePath;
+
+    let logsPath = deployment.logsPath || path.join(basePath, 'logs')
 
     let data = {};
 
@@ -122,7 +124,7 @@ routes.post('/deploy', async (req, res) => {
                 throw new Error(`Temp step failed with code ${data.temp.exitCode}`)
             }
 
-            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id, deployment.logsPath);
+            data.perm = await runStepPerm(basePath, step.subPath, step.command, step._id, logsPath);
 
             if (data.perm.status === 'crashed') {
                 return res.status(500).json({ message: 'Deployment failed' })

@@ -110,7 +110,7 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
     let stopDeploymentButton = form.steps.filter((step) => step.pid !== null).length > 0;
 
     return <div>
-        <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200 h-205">
+        <div className="flex flex-col gap-5 p-5 rounded-xs ring-1 ring-neutral-700 w-200 h-fit">
             <div className="flex flex-col gap-3">
                 <span className="text-[18px] text-neutral-500">Basic information</span>
                 <div className="flex flex-col gap-3">
@@ -130,7 +130,7 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                         <FontAwesomeIcon icon={faPlus} /></button>
                 </div>
                 <div className="flex flex-col gap-3">
-                    <div className={`${darkMode ? 'bg-neutral-950' : 'bg-white'} flex flex-col gap-3 overflow-y-scroll h-105 p-2`}>
+                    <div className={`${darkMode ? 'bg-neutral-950' : 'bg-white'} flex flex-col gap-3 overflow-y-scroll h-fit p-2`}>
                         {form.steps.map((step, i) => {
                             return <div key={i} className={`${darkMode ? 'bg-neutral-900' : 'bg-white'} flex flex-col gap-2 ring-1 ring-neutral-700 p-3`}>
                                 <div className="flex flex-row items-center justify-center gap-3">

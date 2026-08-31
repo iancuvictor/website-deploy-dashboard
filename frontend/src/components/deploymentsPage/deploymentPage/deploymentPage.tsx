@@ -6,7 +6,7 @@ import { useContext, useState, useEffect } from "react";
 import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext";
 import ErrorPage from "../../errorPages/errorPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
+import { faCircleNotch, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import MainSettings from "./mainSettings";
 import Backups from "./backups";
 import PingsData from "../../websitesPage/websitePage/pingsData";
@@ -72,6 +72,8 @@ export default function DeploymentPage() {
         };
     }, [queryClient]);
 
+    console.log(websitesData);
+
     if (error) {
         return <ErrorPage error={error} />
     } else {
@@ -80,29 +82,29 @@ export default function DeploymentPage() {
                 <FontAwesomeIcon icon={faCircleNotch} spin />
             </div>
         } else {
-            return <div className={`${darkMode ? 'text-white' : 'text-black'} flex flex-col 2 gap-10 h-full w-full p-10`}>
+            return <div className={`${darkMode ? 'text-white' : 'text-black'} flex flex-col 2 gap-5 h-full w-full p-5`}>
                 <div className="flex flex-col items-center justify-center">
-                    <h1 className="text-[30px] font-[700]">Viewing: {deploymentData.name}</h1>
+                    <h1 className="text-[24px] font-[700]">Viewing: {deploymentData.name}</h1>
                 </div>
                 <div className="w-full flex flex-col items-start gap-5">
                     <div className="w-full flex flex-row justify-center gap-5">
                         <MainSettings data={deploymentData} id={id} viewWebsite={viewWebsite} setViewWebsite={setViewWebsite} />
                         {websitesData && websitesData.length > 0 && <div className="w-205 flex flex-row flex-wrap gap-5">
                             <Logs stepId={deploymentData?.steps[viewWebsite]?._id} logsPath={deploymentData?.logsPath} />
+                            <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation || ''} backupData={backupData} />
                             <PingsData websiteData={websitesData[viewWebsite].website} data={websitesData[viewWebsite].pings} deploymentId={deploymentData._id} />
                             <PingTable pingsData={websitesData[viewWebsite].pings} status={true} />
                             <CertificateStatus websiteData={websitesData[viewWebsite].website} lastCert={websitesData[viewWebsite].certificate} deploymentId={deploymentData._id} />
-                            <Backups id={deploymentData._id} path={path} backupLocation={deploymentData.backupLocation || ''} backupData={backupData} />
                         </div>}
                     </div>
                 </div>
                 <button onClick={() => requestConfirm({
-                    message: `Are you SURE you want to delete this deployment? All the data that's been recorded with it will be PERMANENTLY deleted! This acction cannot be undone!`,
+                    message: `Are you SURE you want to delete this deployment? All the data that's been recorded with it will be PERMANENTLY deleted! This action cannot be undone!`,
                     confirmText: `Yes, permanently delete deployment`,
                     denyText: `No, cancel`,
                     onConfirm: () => deleteDeployment.mutate(id)
                 })}
-                    className="cursor-pointer absolute right-10 bg-rose-500 hover:bg-rose-600 p-2">Delete deployment</button>
+                    className="cursor-pointer absolute right-10 bg-rose-500 hover:bg-rose-600 p-2 rounded-xs"><FontAwesomeIcon icon={faTrashCan} /> Delete deployment</button>
             </div>
         }
     }

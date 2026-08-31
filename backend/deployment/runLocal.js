@@ -26,10 +26,12 @@ export async function runStepTemp(rootPath, subPath) {
 }
 
 
-
-
 export async function runStepPerm(rootPath, subPath, command, stepId, logsPath) {
   const joinedPath = path.join(rootPath, subPath);
+
+  if(!fs.existsSync(logsPath)) {
+    fs.mkdirSync(logsPath)
+  }
 
   const timestamp = new Date(Date.now()).toISOString();
   const logFile = path.join(logsPath, `Step_${stepId}_Timestamp_${timestamp}.txt`);

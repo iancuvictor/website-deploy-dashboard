@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react"
 import { GlobalStatesContext } from "../../contexts/GlobalStatesContext"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMoon, faPlus, faSun } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { NavLink } from "react-router";
 
 
@@ -38,14 +39,15 @@ export default function Navbar() {
     }, [])
 
     return <div className={`${darkMode ? 'bg-neutral-950 text-white' : 'bg-white text-black shadow-md/20'} 
-    sticky top-0 left-0 flex flex-row items-center justify-end h-20 gap-5 pl-10 pr-10 z-10`}>
+    sticky top-0 left-0 flex flex-row items-center justify-end h-20 gap-5 pl-10 pr-10 z-10 border-b-1 border-neutral-500`}>
         <NavLink to='/config' className={buttonStyle}>Config</NavLink>
         <NavLink to='/websites' className={buttonStyle}>Tracked websites</NavLink>
         <NavLink to='/deployments' 
         className={buttonStyle}>Deployments</NavLink>
         <div className="relative">
         <button onClick={() => setDropDowns({ ...dropDowns, deployments: !dropDowns.deployments })}
-            className={`${darkMode ? 'bg-neutral-800 hover:bg-neutral-700' : 'bg-white hover:bg-gray-200'} cursor-pointer p-1 ring-2 ring-neutral-700 rounded-x text-[14px] duration-75 ease-out`}>
+            className={`${darkMode ? 'bg-neutral-800 hover:bg-neutral-700' : 'bg-white hover:bg-gray-200'} 
+            cursor-pointer p-1 ring-2 ring-neutral-700 rounded-xs text-[14px] duration-75 ease-out`}>
                 <FontAwesomeIcon icon={faPlus}/></button>
             {dropDowns.deployments &&
                 <div ref={deploymentsDropdown}
@@ -54,11 +56,14 @@ export default function Navbar() {
                         className={dropdownButtonStyle} >New deployment</NavLink>
                 </div>}
         </div>
+        <a href="https://github.com/iancuvictor/website-deploy-dashboard" target="noref" 
+        className={`${darkMode ? 'hover:text-white' : 'text-black hover:text-neutral-700'} text-[30px] duration-75 ease-out`}>
+        <FontAwesomeIcon icon={faGithub}/></a>
         <button onClick={() => {
             setDarkMode(!darkMode)
             localStorage.setItem('darkMode', JSON.stringify(!darkMode));
         }}
-            className={`${darkMode ? 'bg-black' : 'bg-white shadow-md/20'} cursor-pointer p-2 rounded-md`}>
+            className={`${darkMode ? 'bg-black' : 'bg-white shadow-md/20'} cursor-pointer p-2 rounded-md w-35`}>
             {darkMode ? 'Dark' : 'Light'} mode <FontAwesomeIcon icon={darkMode ? faMoon : faSun} />
         </button>
     </div>

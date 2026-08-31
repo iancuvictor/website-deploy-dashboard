@@ -1,6 +1,7 @@
 import { faCaretDown, faCaretUp, faCircleNotch, faFileArrowDown, faFloppyDisk, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { type AxiosResponse, AxiosError } from "axios";
 import axios from "axios";
 import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
@@ -37,7 +38,7 @@ export default function Logs({ stepId, logsPath }: LogProps) {
         }
     })
 
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error } = useQuery<AxiosResponse, AxiosError<{ message: string }>>({
         queryKey: ['logs', stepId],
         queryFn: () => axios.get(`${API_URL}/api/deployments/logs/${stepId}`)
     })
@@ -56,7 +57,6 @@ export default function Logs({ stepId, logsPath }: LogProps) {
         };
     }, [data])
 
-    console.log(data);
     if (error) {
         return <ErrorPage error={error} />
     } else {
