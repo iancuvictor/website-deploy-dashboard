@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { usePopUps } from "../../../contexts/PopUpsContext"
 import { type Dispatch, type SetStateAction } from "react"
 import { GlobalStatesContext } from "../../../contexts/GlobalStatesContext"
+import RemoteMachineConfig from "./remoteMachineConfig"
 
 type Step = {
     subPath: string,
@@ -236,6 +237,7 @@ export default function MainSettings({ data, id, viewWebsite, setViewWebsite }: 
                     </div>
                 </div>
             </div>
+            <RemoteMachineConfig/>
         </div>
     </div>
 }

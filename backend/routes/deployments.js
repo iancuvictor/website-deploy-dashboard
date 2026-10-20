@@ -253,6 +253,14 @@ routes.post('/openFolder', async (req, res) => {
     }
 })
 
+routes.post('/connectToRemoteServer', async (req, res) => {
+    try{
+        let result = await ConnectToRemoteServer();
+    } catch(err) {
+        res.status(500).json({message: 'An error has occured while trying to connect to remote server'})
+    }
+});
+
 routes.delete('/deployment', async (req, res) => {
     try {
         await Backup.deleteMany({ deploymentId: req.query.id });

@@ -24,8 +24,9 @@ export default function CloudflareForm() {
         queryKey: ['cloudflareConfig']
     })
 
-
     const [form, setForm] = useState<Form>(data?.data)
+
+    console.log(data)
 
     const saveConfig = useMutation({
         mutationFn: (form: Form) => axios.post(`${API_URL}/api/config/cloudflareConfig`, form),

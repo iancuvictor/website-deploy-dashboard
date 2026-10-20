@@ -1,6 +1,6 @@
 import express from 'express';
 import CloudflareConfig from '../schemas/configCloudflare.js';
-import {runCheck} from '../utils/runCheck.js';
+import { runCheck } from '../utils/runCheck.js';
 
 const routes = express.Router();
 
@@ -22,7 +22,7 @@ routes.get('/status', async (req, res) => {
       certbotInstalled: certbotInstalled.success,
       ufwInstalled: ufwInstalled.success,
       ufwActive: ufwStatus.output.includes('Status: active'),
-    //   ddnsConfigured: config !== null,
+      //   ddnsConfigured: config !== null,
     });
   } catch (err) {
     res.status(500).json({ message: 'An error has occurred' });
@@ -106,27 +106,34 @@ routes.post('/activateUfw', async (req, res) => {
 
 // CLOUDFLARE
 
-routes.post('/cloudflareConfig', async (req, res) => {
-    try {
-        const config = await CloudflareConfig.findOneAndUpdate(
-            {},
-            { $set: req.body },
-            { upsert: true, new: true }
-        );
-        res.status(200).json({ message: 'Config saved', config });
-    } catch (err) {
-        res.status(500).json({ message: 'An error has occurred' });
+routes.get('/cloudflareConfig', async (req, res) => {
+  try {
+    let config = await CloudflareConfig.findOne();
+    if (!config) {
+      await CloudflareConfig.create({
+        apiToken: 'your token',
+        zoneId: 'zone id',
+        baseDomain: 'your domain',
+      })
+      config = await CloudflareConfig.findOne();
     }
+    res.status(200).json(config);
+  } catch (err) {
+    res.status(500).json({ message: 'An error has occurred' });
+  }
 });
 
-routes.get('/cloudflareConfig', async (req, res) => {
-    try {
-        const config = await CloudflareConfig.findOne();
-        res.status(200).json(config);
-        console.log(config);
-    } catch (err) {
-        res.status(500).json({ message: 'An error has occurred' });
-    }
+routes.post('/cloudflareConfig', async (req, res) => {
+  try {
+    const config = await CloudflareConfig.findOneAndUpdate(
+      {},
+      { $set: req.body },
+      { upsert: true, new: true }
+    );
+    res.status(200).json({ message: 'Config saved', config });
+  } catch (err) {
+    res.status(500).json({ message: 'An error has occurred' });
+  }
 });
 
 
